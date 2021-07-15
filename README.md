@@ -1,2 +1,2 @@
 
-# jupitern/slim3-core
+# Servdebt Slim Core

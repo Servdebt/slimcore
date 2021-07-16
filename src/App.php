@@ -16,25 +16,27 @@ use Slim\Handlers\ErrorHandler;
 
 class App
 {
-    public $appName;
+    public ?string $appName;
 
     const DEVELOPMENT = 'development';
     const STAGING = 'staging';
     const PRODUCTION = 'production';
 
-    public $env = self::DEVELOPMENT;
+    public string $env = self::DEVELOPMENT;
 
     /** @var \Slim\App */
     private $slim = null;
-    private $configs = [];
+
+    private array $configs = [];
+
     private static $instance = null;
 
 
     /**
-     * @param string $appName
+     * @param string|null $appName
      * @param array $configs
      */
-    protected function __construct($appName = '', $configs = [])
+    protected function __construct(?string $appName = '', array $configs = [])
     {
         $this->appName = $appName;
         $this->configs = $configs;
@@ -53,11 +55,11 @@ class App
     /**
      * Application Singleton Factory
      *
-     * @param string $appName
+     * @param string|null $appName
      * @param array $configs
      * @return static
      */
-    final public static function instance($appName = '', $configs = [])
+    final public static function instance(?string $appName = '', array $configs = []): self
     {
         if (null === static::$instance) {
             static::$instance = new static($appName, $configs);
@@ -66,31 +68,20 @@ class App
         return static::$instance;
     }
 
-    public function bootstrap()
+    public function bootstrap(): void
     {
         $this->addRoutingMiddleware();
         $this->registerProviders();
-//            $this->registerMiddleware();
+        $this->registerMiddleware();
         $this->registerErrorHandlers();
     }
 
-    /**
-     * get if running application is console
-     *
-     * @return boolean
-     */
-    public function isConsole()
+    public function isConsole(): bool
     {
-        return php_sapi_name() == 'cli';
+        return php_sapi_name() === 'cli';
     }
 
-
-    /**
-     * set configuration param
-     *
-     * @return \Psr\Container\ContainerInterface
-     */
-    public function getContainer()
+    public function getContainer(): \Psr\Container\ContainerInterface
     {
         return $this->slim->getContainer();
     }
@@ -100,26 +91,12 @@ class App
         ($this->slim->getContainer())->set($name, $value);
     }
 
-    /**
-     * set configuration param
-     *
-     * @param string $param
-     * @param mixed $value
-     */
-    public function setConfig($param, $value)
+    public function setConfig($param, $value): void
     {
         $dn = new DotNotation($this->configs);
         $dn->set($param, $value);
     }
 
-
-    /**
-     * get configuration param
-     *
-     * @param mixed $param
-     * @param mixed $defaultValue
-     * @return mixed
-     */
     public function getConfig($param, $defaultValue = null)
     {
         $dn = new DotNotation($this->configs);
@@ -148,7 +125,7 @@ class App
      *
      * @return void
      */
-    public function registerMiddleware()
+    public function registerMiddleware(): void
     {
         $middlewares = array_reverse((array)$this->getConfig('middleware'));
         array_walk($middlewares, function($appName, $middleware) {
@@ -158,7 +135,7 @@ class App
         });
     }
 
-    public function registerErrorHandlers()
+    public function registerErrorHandlers(): void
     {
         $errorMiddleware = $this->addErrorMiddleware($this->configs['debug'] ?? false, $logErrors = true, $logErrorDetails = false, $this->resolve('logger'));
 
@@ -194,7 +171,7 @@ class App
      * @param $name
      * @return bool
      */
-    public function has($name)
+    public function has($name): bool
     {
         return $this->getContainer()->has($name);
     }

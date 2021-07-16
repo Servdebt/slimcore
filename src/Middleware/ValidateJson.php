@@ -1,7 +1,9 @@
 <?php
 
 namespace Servdebt\SlimCore\Middleware;
-use Psr\Http\Message\{ServerRequestInterface, ResponseInterface};
+
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
+use Psr\Http\Message\{ResponseInterface, ServerRequestInterface as Request};
 
 /**
  * Class ValidateJson
@@ -9,26 +11,24 @@ use Psr\Http\Message\{ServerRequestInterface, ResponseInterface};
  * Middleware that it will validate request json body
  * @package app\Middleware
  */
-class ValidateJson
+class ValidateJson extends Middleware
 {
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
+    public function __invoke(Request $request, RequestHandler $handler): ResponseInterface
     {
         $method = $request->getMethod();
         $body = $request->getBody()->getContents();
 
-        $contentType = null;
-        if (isset($request->getHeader('Content-Type')[0]))
-        	$contentType = $request->getHeader('Content-Type')[0];
+        $contentType = $request->getHeader('Content-Type')[0] ?? null;
 
-        if ($method == 'POST' && $contentType == 'application/json' && !empty($body)) {
+        if ($method === 'POST' && $contentType === 'application/json' && !empty($body)) {
             $json = json_decode($body);
 
-            if (json_last_error() != JSON_ERROR_NONE || $json === null) {
+            if ($json === null || json_last_error() != JSON_ERROR_NONE) {
                 return app()->error(422, "Invalid request. Json message malformed");
             }
         }
 
-        return $next($request, $response);
+        return $handler->handle($request);
     }
 
 }

@@ -15,12 +15,11 @@ class ValidateJson extends Middleware
 {
     public function __invoke(Request $request, RequestHandler $handler): ResponseInterface
     {
-        $method = $request->getMethod();
         $body = $request->getBody()->getContents();
 
         $contentType = $request->getHeader('Content-Type')[0] ?? null;
 
-        if ($method === 'POST' && $contentType === 'application/json' && !empty($body)) {
+        if ($contentType === 'application/json' && !empty($body)) {
             $json = json_decode($body);
 
             if ($json === null || json_last_error() != JSON_ERROR_NONE) {

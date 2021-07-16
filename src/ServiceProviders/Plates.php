@@ -3,10 +3,11 @@
 namespace Servdebt\SlimCore\ServiceProviders;
 
 use League\Plates\Engine;
+use Servdebt\SlimCore\App;
 
 class Plates implements ProviderInterface
 {
-    public static function register($serviceName, array $settings = [])
+    public static function register(App $app, $serviceName, array $settings = [])
     {
         $engine = new Engine();
         foreach ($settings['templates'] as $name => $path) {
@@ -19,6 +20,6 @@ class Plates implements ProviderInterface
             }
         }
 
-        app()->registerInContainer($serviceName, $engine);
+        $app->registerInContainer($serviceName, $engine);
     }
 }

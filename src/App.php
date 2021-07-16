@@ -21,6 +21,7 @@ class App
     const DEVELOPMENT = 'development';
     const STAGING = 'staging';
     const PRODUCTION = 'production';
+
     public $env = self::DEVELOPMENT;
 
     /** @var \Slim\App */
@@ -45,6 +46,8 @@ class App
 
         date_default_timezone_set($this->configs['timezone']);
         \Locale::setDefault($this->configs['locale']);
+
+        $this->bootstrap();
     }
 
     /**
@@ -58,16 +61,18 @@ class App
     {
         if (null === static::$instance) {
             static::$instance = new static($appName, $configs);
-
-            static::$instance->addRoutingMiddleware();
-            static::$instance->registerProviders();
-//            static::$instance->registerMiddleware();
-            static::$instance->registerErrorHandlers();
         }
 
         return static::$instance;
     }
 
+    public function bootstrap()
+    {
+        $this->addRoutingMiddleware();
+        $this->registerProviders();
+//            $this->registerMiddleware();
+        $this->registerErrorHandlers();
+    }
 
     /**
      * get if running application is console
@@ -111,8 +116,8 @@ class App
     /**
      * get configuration param
      *
-     * @param string $param
-     * @param string $defaultValue
+     * @param mixed $param
+     * @param mixed $defaultValue
      * @return mixed
      */
     public function getConfig($param, $defaultValue = null)
@@ -127,12 +132,12 @@ class App
      *
      * @return void
      */
-    public function registerProviders()
+    public function registerProviders(): void
     {
         $services = (array)$this->getConfig('services');
         foreach ($services as $serviceName => $service) {
             if (!isset($service['on']) || strpos($service['on'], $this->appName) !== false) {
-                $service['provider']::register($serviceName, $service['settings'] ?? []);
+                $service['provider']::register($this, $serviceName, $service['settings'] ?? []);
             }
         }
     }
@@ -191,8 +196,7 @@ class App
      */
     public function has($name)
     {
-        $c = $this->getContainer();
-        return $c->has($name);
+        return $this->getContainer()->has($name);
     }
 
 
@@ -206,7 +210,7 @@ class App
         if (property_exists($this, $name)) {
             $this->slim->{$name} = $value;
         } else {
-            $this->getContainer()->set($name, $value);
+            $this->registerInContainer($name, $value);
         }
     }
 
@@ -425,13 +429,10 @@ class App
     }
 
 
-    /**
-     */
-    public function notFound()
+    public function notFound(): void
     {
         throw new HttpNotFoundException($this->request);
     }
-
 
     /**
      * @param int $httpCode

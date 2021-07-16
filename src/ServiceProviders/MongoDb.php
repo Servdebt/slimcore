@@ -1,15 +1,17 @@
 <?php
 
 namespace Servdebt\SlimCore\ServiceProviders;
+
 use \MongoDB\Client;
 use SequelMongo\QueryBuilder;
+use Servdebt\SlimCore\App;
 
 class MongoDb implements ProviderInterface
 {
 
-    public static function register($serviceName, array $settings = [])
+    public static function register(App $app, $serviceName, array $settings = [])
     {
-        app()->registerInContainer($serviceName, function ($c) use($serviceName, $settings) {
+        $app->registerInContainer($serviceName, function($c) use ($serviceName, $settings) {
 
             $con = new Client($settings["uri"], $settings["options"]);
 
@@ -22,7 +24,7 @@ class MongoDb implements ProviderInterface
             }
 
             return $con;
-        };
+        });
     }
 
 }

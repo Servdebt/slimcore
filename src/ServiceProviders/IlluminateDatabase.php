@@ -1,21 +1,23 @@
 <?php
 
 namespace Servdebt\SlimCore\ServiceProviders;
+
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Servdebt\SlimCore\App;
 
 class IlluminateDatabase implements ProviderInterface
 {
 
-    public static function register($serviceName, array $settings = [])
+    public static function register(App $app, $serviceName, array $settings = [])
     {
         $capsule = null;
-        if (app()->has('capsule')) {
-            $capsule = app()->resolve('capsule');
+        if ($app->has('capsule')) {
+            $capsule = $app->capsule;
         } else {
             $capsule = new Capsule();
             $capsule->setAsGlobal();
             $capsule->bootEloquent();
-            app()->getContainer()['capsule'] = $capsule;
+            $app->registerInContainer('capsule', $capsule);
         }
 
         $capsule->addConnection($settings, $serviceName);
@@ -25,7 +27,7 @@ class IlluminateDatabase implements ProviderInterface
             $db->enableQueryLog();
         }
 
-        app()->registerInContainer($serviceName, $db);
+        $app->registerInContainer($serviceName, $db);
     }
 
 }

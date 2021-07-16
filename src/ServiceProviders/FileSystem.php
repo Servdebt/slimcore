@@ -2,17 +2,16 @@
 
 namespace Servdebt\SlimCore\ServiceProviders;
 
-use Servdebt\SlimCore\Filesystem\Filesystem as FilesystemFilesystem;
-use Servdebt\SlimCore\ServiceProviders\ProviderInterface;
+use Servdebt\SlimCore\App;
 use Servdebt\SlimCore\Filesystem\Filesystem as ExtendedFilesystem;
 use Servdebt\SlimCore\Filesystem\S3\AsyncAwsS3Adapter;
 
 class Filesystem implements ProviderInterface
 {
-    public static function register(string $serviceName, array $settings = [])
+    public static function register(App $app, string $serviceName, array $settings = [])
     {
-        app()->registerInContainer($serviceName, function ($c) use ($settings) {
-            return function ($configsOverride = []) use ($settings) {
+        $app->registerInContainer($serviceName, function($c) use ($settings) {
+            return function($configsOverride = []) use ($settings) {
 
                 $configs = array_merge($settings, $configsOverride);
 
@@ -54,7 +53,7 @@ class Filesystem implements ProviderInterface
 
         return new ExtendedFilesystem($adapter, [], null);
     }
-    
+
     public static function createS3Async($settings)
     {
         $client = new \AsyncAws\SimpleS3\SimpleS3Client([

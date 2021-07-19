@@ -4,15 +4,14 @@ namespace Servdebt\SlimCore;
 
 use Servdebt\SlimCore\Handlers\NotAllowed;
 use Servdebt\SlimCore\Handlers\NotFound;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 use Servdebt\SlimCore\Handlers\Error;
 use Servdebt\SlimCore\Utils\DotNotation;
 use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
-use Slim\Handlers\ErrorHandler;
 
 class App
 {
@@ -41,11 +40,17 @@ class App
         $this->appName = $appName;
         $this->configs = $configs;
 
-        AppFactory::setContainer(new \DI\Container());
+        $builder = new \DI\ContainerBuilder();
+        $builder->addDefinitions(require __DIR__.'/Config/container.php');
+        $builder->useAutowiring(true);
+        $builder->useAnnotations(false);
+        $container = $builder->build();
+
+        AppFactory::setContainer($container);
         $this->slim = AppFactory::create();
 
-        $this->registerInContainer('request', (ServerRequestCreatorFactory::create())->createServerRequestFromGlobals());
-        $this->registerInContainer('response', $this->slim->getResponseFactory()->createResponse());
+        $this->registerInContainer(Request::class, (ServerRequestCreatorFactory::create())->createServerRequestFromGlobals());
+        $this->registerInContainer(Response::class, $this->slim->getResponseFactory()->createResponse());
 
         date_default_timezone_set($this->configs['timezone']);
         \Locale::setDefault($this->configs['locale']);
@@ -71,9 +76,9 @@ class App
 
     public function run()
     {
-        $this->slim->run($this->request);
+        $this->slim->run($this->resolve(Request::class));
     }
-    
+
     public function bootstrap(): void
     {
         $this->addRoutingMiddleware();
@@ -272,7 +277,7 @@ class App
             return $resp;
         }
 
-        $response = $this->resolve('response');
+        $response = $this->resolve(Response::class);
 
         if (is_array($resp) || is_object($resp)) {
             $response = $response->withHeader('Content-Type', 'application/json');
@@ -300,30 +305,17 @@ class App
             $className = $classMethod[0];
             $methodName = $classMethod[1];
 
-            if (!$useReflection) {
-                if (class_exists($className)) {
-                    $controller = new $className;
-                } else {
-                    return $this->notFound();
-                }
-                $method = new \ReflectionMethod($controller, $methodName);
-            } else {
-                // adicional code to inject dependencies in controller class constructor
-                $class = new \ReflectionClass($className);
-                if (!$class->isInstantiable() || !$class->hasMethod($methodName)) {
-                    throw new \ReflectionException("route class is not instantiable or method does not exist");
-                }
+            $controller = $this->getContainer()->get($className);
 
-                $constructorArgs = $this->resolveMethodDependencies($class->getConstructor());
-                $controller = $class->newInstanceArgs($constructorArgs);
-
-                $method = $class->getMethod($methodName);
-            }
-
-        } catch (\ReflectionException $e) {
-            return $this->notFound();
+        } catch (\DI\NotFoundException $e) {
+            $this->notFound();
         }
 
+        if(!method_exists($controller, $methodName)){
+            $this->notFound();
+        }
+
+        $method = new \ReflectionMethod($controller, $methodName);
         $args = $this->resolveMethodDependencies($method, $requestParams);
         $ret = $method->invokeArgs($controller, $args);
 
@@ -342,28 +334,9 @@ class App
      */
     public function resolve($name, $params = [])
     {
-        $c = $this->getContainer();
+        $dependency = $this->getContainer()->get($name);
 
-        if ($c->has($name)) {
-            return is_callable($c->get($name)) ? call_user_func_array($c->get($name), $params) : $c->get($name);
-        }
-
-        if (!class_exists($name)) {
-            throw new \ReflectionException("Unable to resolve {$name}");
-        }
-
-        $reflector = new \ReflectionClass($name);
-
-        if (!$reflector->isInstantiable()) {
-            throw new \ReflectionException("Class {$name} is not instantiable");
-        }
-
-        if ($constructor = $reflector->getConstructor()) {
-            $dependencies = $this->resolveMethodDependencies($constructor);
-            return $reflector->newInstanceArgs($dependencies);
-        }
-
-        return new $name();
+        return is_callable($dependency) ? call_user_func_array($dependency, $params) : $dependency;
     }
 
 
@@ -412,6 +385,9 @@ class App
     }
 
 
+    /**
+     * @throws HttpNotFoundException
+     */
     public function notFound(): void
     {
         throw new HttpNotFoundException($this->request);
@@ -425,7 +401,7 @@ class App
      */
     public function code($httpCode = 200)
     {
-        return $this->resolve('response')->withStatus($httpCode);
+        return $this->resolve(Request::class)->withStatus($httpCode);
     }
 
 
@@ -438,22 +414,24 @@ class App
      */
     function error($code = 500, $error = '', $messages = [])
     {
-        if ($this->resolve('request')->getHeaderLine('Accept') == 'application/json') {
-            $response = $this->resolve('response')
+        if ($this->resolve(Request::class)->getHeaderLine('Accept') == 'application/json') {
+            $response = $this->resolve(Response::class)
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus($code);
             $response->getBody()->write(json_encode(['code' => $code, 'error' => $error, 'messages' => $messages]));
             return $response;
         }
 
-        $resp = $this->resolve('view')->render('http::error', [
-            'code'     => $code,
-            'error'    => $error,
-            'messages' => $messages,
-        ]);
+        if($this->has('view')){
+            $resp = $this->resolve('view')->render('http::error', [
+                'code'     => $code,
+                'error'    => $error,
+                'messages' => $messages,
+            ]);
 
-        $response = $this->resolve('response')->withStatus($code);
-        $response->getBody()->write($resp);
+            $response = $this->resolve(Response::class)->withStatus($code);
+            $response->getBody()->write($resp);
+        }
 
         return $response;
     }
@@ -461,7 +439,7 @@ class App
 
     function consoleError($error, $messages = [])
     {
-        $response = $this->resolve('response')->withHeader('Content-type', 'text/plain');
+        $response = $this->resolve(Response::class)->withHeader('Content-type', 'text/plain');
         $response->getBody()->write($error . PHP_EOL . implode(PHP_EOL, $messages));
 
         return $response;

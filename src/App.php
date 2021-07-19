@@ -5,7 +5,7 @@ namespace Servdebt\SlimCore;
 use Servdebt\SlimCore\Handlers\NotAllowed;
 use Servdebt\SlimCore\Handlers\NotFound;
 use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 use Servdebt\SlimCore\Handlers\Error;
 use Servdebt\SlimCore\Utils\DotNotation;
 use Slim\Exception\HttpMethodNotAllowedException;
@@ -43,6 +43,7 @@ class App
 
         AppFactory::setContainer(new \DI\Container());
         $this->slim = AppFactory::create();
+
         $this->registerInContainer('request', (ServerRequestCreatorFactory::create())->createServerRequestFromGlobals());
         $this->registerInContainer('response', $this->slim->getResponseFactory()->createResponse());
 
@@ -68,6 +69,11 @@ class App
         return static::$instance;
     }
 
+    public function run()
+    {
+        $this->slim->run($this->request);
+    }
+    
     public function bootstrap(): void
     {
         $this->addRoutingMiddleware();

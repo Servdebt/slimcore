@@ -44,31 +44,30 @@ final class Error extends \Slim\Handlers\ErrorHandler
             ]);
         }
 
-        if (app()->isConsole()) {
-            if (app()->has('slashtrace')) {
-                $slashtrace = app()->resolve('slashtrace');
-                $slashtrace->register();
-                $slashtrace->handleException($exception);
-                return app()->resolve('response')->withStatus($errorCode);
-            }
-
-            return app()->consoleError($errorMsg, $messages);
-        }
-
         if ($request->getHeaderLine('Accept') == 'application/json' || !$displayErrorDetails) {
             if (!$displayErrorDetails && $errorCode != 422) {
                 $errorMsg = "Ops. An error occurred";
                 $messages = [];
             }
-
-            return app()->error($errorCode, $errorMsg, $messages);
+            return $app->error($errorCode, $errorMsg, $messages);
         }
 
-        if (app()->has('slashtrace')) {
-            $slashtrace = app()->resolve('slashtrace');
+        if ($app->isConsole()) {
+            if ($app->has('slashtrace')) {
+                $slashtrace = $app->resolve('slashtrace');
+                $slashtrace->register();
+                $slashtrace->handleException($exception);
+                return $app->resolve('response')->withStatus($errorCode);
+            }
+
+            return $app->consoleError($errorMsg, $messages);
+        }
+
+        if ($app->has('slashtrace')) {
+            $slashtrace = $app->resolve('slashtrace');
             $slashtrace->register();
             $slashtrace->handleException($exception);
-            return app()->resolve('response')->withStatus($errorCode);
+            return $app->resolve('response')->withStatus($errorCode);
         }
 
         return parent::__invoke($request, $exception, $displayErrorDetails, false, false);

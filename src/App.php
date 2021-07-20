@@ -148,14 +148,16 @@ class App
 
     public function registerErrorHandlers(): void
     {
-        $errorMiddleware = $this->addErrorMiddleware($this->configs['debug'] ?? false, $logErrors = true, $logErrorDetails = false, $this->resolve('logger'));
+        $logger = $this->has('logger') ? $this->resolve('logger') : null;
+
+        $errorMiddleware = $this->addErrorMiddleware($this->configs['debug'] ?? false, $logErrors = true, $logErrorDetails = false, $logger);
 
         $errorMiddleware->setErrorHandler(
             HttpNotFoundException::class,
             new NotFound(
                 $this->getCallableResolver(),
                 $this->getResponseFactory(),
-                $this->resolve('logger')
+                $logger
             )
         );
 
@@ -164,7 +166,7 @@ class App
             new NotAllowed(
                 $this->getCallableResolver(),
                 $this->getResponseFactory(),
-                $this->resolve('logger')
+                $logger
             )
         );
 
@@ -172,7 +174,7 @@ class App
             new Error(
                 $this->getCallableResolver(),
                 $this->getResponseFactory(),
-                $this->resolve('logger')
+                $logger
             )
         );
     }
@@ -414,33 +416,34 @@ class App
      */
     function error($code = 500, $error = '', $messages = [])
     {
-        if ($this->resolve(Request::class)->getHeaderLine('Accept') == 'application/json') {
-            $response = $this->resolve(Response::class)
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus($code);
-            $response->getBody()->write(json_encode(['code' => $code, 'error' => $error, 'messages' => $messages]));
+        $response = $this->resolve('response');
+
+        if ($this->isConsole()) {
+            $response = $response->withHeader('Content-type', 'text/plain');
+            $response->getBody()->write($error . PHP_EOL . implode(PHP_EOL, $messages));
             return $response;
         }
 
-        if($this->has('view')){
-            $resp = $this->resolve('view')->render('http::error', [
+        if ($this->resolve('request')->getHeaderLine('Accept') === 'application/json') {
+            $response = $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus($code);
+            $response->getBody()->write(json_encode([
                 'code'     => $code,
                 'error'    => $error,
                 'messages' => $messages,
-            ]);
-
-            $response = $this->resolve(Response::class)->withStatus($code);
-            $response->getBody()->write($resp);
+            ]));
+            return $response;
         }
 
-        return $response;
-    }
+        // Use application default handler
+        if (!array_key_exists('errorHandler', $this->configs)) {
+            throw new \Exception('No default error handler defined. Please configure it in application configurations.');
+        }
 
-
-    function consoleError($error, $messages = [])
-    {
-        $response = $this->resolve(Response::class)->withHeader('Content-type', 'text/plain');
-        $response->getBody()->write($error . PHP_EOL . implode(PHP_EOL, $messages));
+        $response = is_callable($this->configs['errorHandler'])
+            ? call_user_func($this->configs['errorHandler'], $code, $error, $messages)
+            : (new $this->configs['errorHandler'])($code, $error, $messages);
 
         return $response;
     }

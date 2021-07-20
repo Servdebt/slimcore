@@ -76,7 +76,7 @@ class App
 
     public function run()
     {
-        $this->slim->run($this->resolve(Request::class));
+        $this->slim->run($this->request);
     }
 
     public function bootstrap(): void
@@ -303,9 +303,10 @@ class App
      */
     public function resolveRoute($classMethod, $requestParams = [], $useReflection = true)
     {
+        $className = $classMethod[0];
+        $methodName = $classMethod[1];
+
         try {
-            $className = $classMethod[0];
-            $methodName = $classMethod[1];
 
             $controller = $this->getContainer()->get($className);
 
@@ -403,7 +404,7 @@ class App
      */
     public function code($httpCode = 200)
     {
-        return $this->resolve(Request::class)->withStatus($httpCode);
+        return $this->resolve(Response::class)->withStatus($httpCode);
     }
 
 

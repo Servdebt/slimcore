@@ -4,15 +4,14 @@ namespace Servdebt\SlimCore;
 
 use Servdebt\SlimCore\Handlers\NotAllowed;
 use Servdebt\SlimCore\Handlers\NotFound;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 use Servdebt\SlimCore\Handlers\Error;
 use Servdebt\SlimCore\Utils\DotNotation;
 use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
-use Slim\Handlers\ErrorHandler;
 
 class App
 {
@@ -137,14 +136,16 @@ class App
 
     public function registerErrorHandlers(): void
     {
-        $errorMiddleware = $this->addErrorMiddleware($this->configs['debug'] ?? false, $logErrors = true, $logErrorDetails = false, $this->resolve('logger'));
+        $logger = $this->has('logger') ? $this->resolve('logger') : null;
+
+        $errorMiddleware = $this->addErrorMiddleware($this->configs['debug'] ?? false, $logErrors = true, $logErrorDetails = false, $logger);
 
         $errorMiddleware->setErrorHandler(
             HttpNotFoundException::class,
             new NotFound(
                 $this->getCallableResolver(),
                 $this->getResponseFactory(),
-                $this->resolve('logger')
+                $logger
             )
         );
 
@@ -153,7 +154,7 @@ class App
             new NotAllowed(
                 $this->getCallableResolver(),
                 $this->getResponseFactory(),
-                $this->resolve('logger')
+                $logger
             )
         );
 
@@ -161,7 +162,7 @@ class App
             new Error(
                 $this->getCallableResolver(),
                 $this->getResponseFactory(),
-                $this->resolve('logger')
+                $logger
             )
         );
     }
@@ -432,31 +433,34 @@ class App
      */
     function error($code = 500, $error = '', $messages = [])
     {
-        if ($this->resolve('request')->getHeaderLine('Accept') == 'application/json') {
-            $response = $this->resolve('response')
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus($code);
-            $response->getBody()->write(json_encode(['code' => $code, 'error' => $error, 'messages' => $messages]));
+        $response = $this->resolve('response');
+
+        if ($this->isConsole()) {
+            $response = $response->withHeader('Content-type', 'text/plain');
+            $response->getBody()->write($error . PHP_EOL . implode(PHP_EOL, $messages));
             return $response;
         }
 
-        $resp = $this->resolve('view')->render('http::error', [
-            'code'     => $code,
-            'error'    => $error,
-            'messages' => $messages,
-        ]);
+        if ($this->resolve('request')->getHeaderLine('Accept') === 'application/json') {
+            $response = $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus($code);
+            $response->getBody()->write(json_encode([
+                'code'     => $code,
+                'error'    => $error,
+                'messages' => $messages,
+            ]));
+            return $response;
+        }
 
-        $response = $this->resolve('response')->withStatus($code);
-        $response->getBody()->write($resp);
+        // Use application default handler
+        if (!array_key_exists('errorHandler', $this->configs)) {
+            throw new \Exception('No default error handler defined. Please configure it in application configurations.');
+        }
 
-        return $response;
-    }
-
-
-    function consoleError($error, $messages = [])
-    {
-        $response = $this->resolve('response')->withHeader('Content-type', 'text/plain');
-        $response->getBody()->write($error . PHP_EOL . implode(PHP_EOL, $messages));
+        $response = is_callable($this->configs['errorHandler'])
+            ? call_user_func($this->configs['errorHandler'], $code, $error, $messages)
+            : (new $this->configs['errorHandler'])($code, $error, $messages);
 
         return $response;
     }

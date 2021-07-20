@@ -60,7 +60,7 @@ final class Error extends \Slim\Handlers\ErrorHandler
                 return $app->resolve('response')->withStatus($errorCode);
             }
 
-            return $app->consoleError($errorMsg, $messages);
+            return $app->error($errorCode, $errorMsg, $messages);
         }
 
         if ($app->has('slashtrace')) {

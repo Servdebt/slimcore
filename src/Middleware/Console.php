@@ -12,8 +12,8 @@ class Console extends Middleware
 {
 
     public function __invoke(Request $request, RequestHandler $handler): ResponseInterface
-	{
-        if (php_sapi_name() === 'cli') {
+    {
+        if (app()->isConsole()) {
             $data = Environment::mock([
                 'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'],
                 'REQUEST_URI' => '/command',
@@ -25,5 +25,5 @@ class Console extends Middleware
         }
 
         return $handler->handle($request);
-	}
+    }
 }

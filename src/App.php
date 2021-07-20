@@ -287,7 +287,7 @@ class App
             return $response;
         }
 
-        $response->getBody()->write($resp);
+        $response->getBody()->write((string)$resp);
 
         return $response;
     }

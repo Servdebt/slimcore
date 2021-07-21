@@ -379,12 +379,13 @@ class App
             return $param->getDefaultValue();
         }
 
-        if (!$param->getClass()) {
-            throw new \ReflectionException("Unable to resolve method param {$param->name}");
+        $name = $param->getType() && !$param->getType()->isBuiltin() ? new \ReflectionClass($param->getType()->getName()) : null;
+        if (!$name) {
+            throw new \ReflectionException("Unable to resolve method param {$name}");
         }
 
         // try to resolve from container
-        return $this->resolve($param->getClass()->name);
+        return $this->resolve($name);
     }
 
 

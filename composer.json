@@ -11,10 +11,10 @@
         "psr/log": "1.1.*",
         "monolog/monolog": "2.1.*",
         "slashtrace/slashtrace": "1.1.*",
-        "slim/slim": "^4.8",
+        "slim/slim": "4.8.*",
         "ext-zlib": "*",
-        "php-di/php-di": "6.3",
-        "slim/psr7": "1.4"
+        "php-di/php-di": "6.3.*",
+        "slim/psr7": "1.4.*"
     },
     "autoload": {
         "psr-4": {

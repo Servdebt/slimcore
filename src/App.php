@@ -15,7 +15,8 @@ use Slim\Factory\ServerRequestCreatorFactory;
 
 class App
 {
-    public ?string $appName;
+    public string $appName;
+    public string $projectPath;
 
     const DEVELOPMENT = 'development';
     const STAGING = 'staging';
@@ -30,18 +31,13 @@ class App
 
     private static $instance = null;
 
-
-    /**
-     * @param string|null $appName
-     * @param array $configs
-     */
-    protected function __construct(?string $appName = '', array $configs = [])
+    protected function __construct(string $projectPath, bool $loadEnv = false)
     {
-        $this->appName = $appName;
-        $this->configs = $configs;
+        $this->appName = $this->isConsole() ? 'console' : 'http';
+        $this->projectPath = $projectPath;
 
         $builder = new \DI\ContainerBuilder();
-        $builder->addDefinitions(require __DIR__.'/Config/container.php');
+        $builder->addDefinitions(require __DIR__ . '/Config/container.php');
         $builder->useAutowiring(true);
         $builder->useAnnotations(false);
         $container = $builder->build();
@@ -52,8 +48,9 @@ class App
         $this->registerInContainer(Request::class, (ServerRequestCreatorFactory::create())->createServerRequestFromGlobals());
         $this->registerInContainer(Response::class, $this->slim->getResponseFactory()->createResponse());
 
-        date_default_timezone_set($this->configs['timezone']);
-        \Locale::setDefault($this->configs['locale']);
+        if ($loadEnv) {
+            $this->loadEnv();
+        }
 
         $this->bootstrap();
     }
@@ -65,13 +62,20 @@ class App
      * @param array $configs
      * @return static
      */
-    final public static function instance(?string $appName = '', array $configs = []): self
+    final public static function instance(string $projectPath = '', bool $loadEnv = false): self
     {
         if (null === static::$instance) {
-            static::$instance = new static($appName, $configs);
+            static::$instance = new static($projectPath, $loadEnv);
         }
 
         return static::$instance;
+    }
+
+    public function loadEnv(array $mandatoryConfigs = [])
+    {
+        $dotenv = \Dotenv\Dotenv::createImmutable($this->projectPath);
+        $dotenv->required($mandatoryConfigs);
+        $dotenv->load();
     }
 
     public function run()
@@ -81,10 +85,22 @@ class App
 
     public function bootstrap(): void
     {
+        $this->configs = $this->getConfigs();
+
+        date_default_timezone_set($this->configs['timezone']);
+        \Locale::setDefault($this->configs['locale']);
+
         $this->addRoutingMiddleware();
         $this->registerProviders();
         $this->registerMiddleware();
         $this->registerErrorHandlers();
+    }
+
+    private function getConfigs()
+    {
+        $baseConfigs = require $this->projectPath . 'config/' . 'app.php';
+        $envConfigs = require $this->projectPath . 'config/' . ($baseConfigs['env']) . '.php';
+        return array_merge_recursive($baseConfigs, $envConfigs);
     }
 
     public function isConsole(): bool
@@ -314,7 +330,7 @@ class App
             $this->notFound();
         }
 
-        if(!method_exists($controller, $methodName)){
+        if (!method_exists($controller, $methodName)) {
             $this->notFound();
         }
 
@@ -448,6 +464,19 @@ class App
             : (new $this->configs['errorHandler'])($code, $error, $messages);
 
         return $response;
+    }
+
+    public static function env(string $key, $default = '')
+    {
+        if (isset($_ENV[$key])) {
+            return $_ENV[$key];
+        }
+
+        if (isset($_SERVER[$key])) {
+            return $_SERVER[$key];
+        }
+
+        return $default;
     }
 
 }

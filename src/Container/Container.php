@@ -108,14 +108,15 @@ class Container implements ContainerInterface
     /**
      * alias
      *
-     * @param string $alias
-     * @param string $id
+     * @param array $aliases
      *
      * @return self
      */
-    public function alias(string $alias, string $id)
+    public function alias(array $aliases): self
     {
-        $this->alias[$id] = $alias;
+        foreach($aliases as $id => $alias){
+            $this->alias[$id] = $alias;
+        }
 
         return $this;
     }

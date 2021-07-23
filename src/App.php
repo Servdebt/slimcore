@@ -29,12 +29,11 @@ class App
 
     public string $env = self::DEVELOPMENT;
 
-    /** @var \Slim\App */
-    private $slim = null;
+    private ?\Slim\App $slim = null;
 
     private array $configs = [];
 
-    private static $instance = null;
+    private static ?self $instance = null;
 
     protected function __construct(ContainerInterface $container = null)
     {
@@ -43,14 +42,17 @@ class App
         if (!$container) {
             $container = (new Container())
                 ->withAutoWiring()
-                ->alias(Request::class, 'request')
-                ->alias(Response::class, 'response')
-                ->set(Request::class, (ServerRequestCreatorFactory::create())->createServerRequestFromGlobals())
-                ->set(Response::class, (new ResponseFactory)->createResponse());
+                ->alias([
+                    'request' => Request::class,
+                    'response' => Response::class
+                ]);
         }
 
         AppFactory::setContainer($container);
         $this->slim = AppFactory::create();
+
+        $this->registerInContainer(Request::class, (ServerRequestCreatorFactory::create())->createServerRequestFromGlobals());
+        $this->registerInContainer(Response::class, (new ResponseFactory)->createResponse());
     }
 
     public function loadEnv(string $path, string $filename = '.env', array $mandatoryConfigs = []): void
@@ -321,7 +323,7 @@ class App
      */
     public function error(int $code = 500, string $error = '', array $messages = []): Response
     {
-        $response = $this->resolve('response');
+        $response = $this->resolve(Response::class);
 
         if ($this->isConsole()) {
             $response = $response->withHeader('Content-type', 'text/plain');
@@ -329,7 +331,7 @@ class App
             return $response;
         }
 
-        if ($this->resolve('request')->getHeaderLine('Accept') === 'application/json') {
+        if ($this->resolve(Request::class)->getHeaderLine('Accept') === 'application/json') {
             $response = $response
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus($code);

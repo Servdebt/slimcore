@@ -2,6 +2,8 @@
 
 namespace Servdebt\SlimCore;
 
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Servdebt\SlimCore\Handlers\NotAllowed;
 use Servdebt\SlimCore\Handlers\NotFound;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -12,11 +14,12 @@ use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
+use Slim\Handlers\ErrorHandler;
+use function DI\get;
 
 class App
 {
     public string $appName;
-    public string $projectPath;
 
     const DEVELOPMENT = 'development';
     const STAGING = 'staging';
@@ -31,112 +34,66 @@ class App
 
     private static $instance = null;
 
-    protected function __construct(string $projectPath, bool $loadEnv = false)
+    protected function __construct(ContainerInterface $container = null)
     {
         $this->appName = $this->isConsole() ? 'console' : 'http';
-        $this->projectPath = $projectPath;
 
-        $builder = new \DI\ContainerBuilder();
-        $builder->addDefinitions(require __DIR__ . '/Config/container.php');
-        $builder->useAutowiring(true);
-        $builder->useAnnotations(false);
-        $container = $builder->build();
-
-        AppFactory::setContainer($container);
+        $this->setContainer($container);
         $this->slim = AppFactory::create();
 
         $this->registerInContainer(Request::class, (ServerRequestCreatorFactory::create())->createServerRequestFromGlobals());
         $this->registerInContainer(Response::class, $this->slim->getResponseFactory()->createResponse());
-
-        if ($loadEnv) {
-            $this->loadEnv();
-        }
-
-        $this->bootstrap();
     }
 
-    /**
-     * Application Singleton Factory
-     *
-     * @param string|null $appName
-     * @param array $configs
-     * @return static
-     */
-    final public static function instance(string $projectPath = '', bool $loadEnv = false): self
+    private function setContainer(ContainerInterface $container = null): void
     {
-        if (null === static::$instance) {
-            static::$instance = new static($projectPath, $loadEnv);
+        if (!$container) {
+            $builder = new \DI\ContainerBuilder();
+            $builder->addDefinitions([
+                'request' => get(\Psr\Http\Message\ServerRequestInterface::class),
+                'response' => get(\Psr\Http\Message\ResponseInterface::class),
+            ]);
+            $builder->useAutowiring(true);
+            $builder->useAnnotations(false);
+            $container = $builder->build();
         }
 
-        return static::$instance;
+        AppFactory::setContainer($container);
     }
 
-    public function loadEnv(array $mandatoryConfigs = [])
+    public function loadEnv(string $path, string $filename = '.env', array $mandatoryConfigs = []): void
     {
-        $dotenv = \Dotenv\Dotenv::createImmutable($this->projectPath);
+        $dotenv = \Dotenv\Dotenv::createImmutable($path, $filename);
         $dotenv->required($mandatoryConfigs);
         $dotenv->load();
+
+        $this->env = self::env('APP_ENV', self::DEVELOPMENT);
     }
 
-    public function run()
+    public function setConfigs(array $configs): void
     {
-        $this->slim->run($this->request);
+        $this->configs = $configs;
     }
 
-    public function bootstrap(): void
+    public function run(): void
     {
-        $this->configs = $this->getConfigs();
+        if(isset($this->configs['timezone'])){
+            date_default_timezone_set($this->configs['timezone']);
+        }
 
-        date_default_timezone_set($this->configs['timezone']);
-        \Locale::setDefault($this->configs['locale']);
+        if(isset($this->configs['locale'])){
+            \Locale::setDefault($this->configs['locale']);
+        }
 
         $this->addRoutingMiddleware();
         $this->registerProviders();
         $this->registerMiddleware();
         $this->registerErrorHandlers();
+
+        $this->slim->run($this->request);
     }
 
-    private function getConfigs()
-    {
-        $baseConfigs = require $this->projectPath . 'config/' . 'app.php';
-        $envConfigs = require $this->projectPath . 'config/' . ($baseConfigs['env']) . '.php';
-        return array_merge_recursive($baseConfigs, $envConfigs);
-    }
-
-    public function isConsole(): bool
-    {
-        return php_sapi_name() === 'cli';
-    }
-
-    public function getContainer(): \Psr\Container\ContainerInterface
-    {
-        return $this->slim->getContainer();
-    }
-
-    public function registerInContainer(string $name, $value): void
-    {
-        ($this->slim->getContainer())->set($name, $value);
-    }
-
-    public function setConfig($param, $value): void
-    {
-        $dn = new DotNotation($this->configs);
-        $dn->set($param, $value);
-    }
-
-    public function getConfig($param, $defaultValue = null)
-    {
-        $dn = new DotNotation($this->configs);
-        return $dn->get($param, $defaultValue);
-    }
-
-
-    /**
-     * register providers
-     *
-     * @return void
-     */
-    public function registerProviders(): void
+    private function registerProviders(): void
     {
         $services = (array)$this->getConfig('services');
         foreach ($services as $serviceName => $service) {
@@ -146,13 +103,7 @@ class App
         }
     }
 
-
-    /**
-     * register providers
-     *
-     * @return void
-     */
-    public function registerMiddleware(): void
+    private function registerMiddleware(): void
     {
         $middlewares = array_reverse((array)$this->getConfig('middleware'));
         array_walk($middlewares, function($appName, $middleware) {
@@ -162,7 +113,7 @@ class App
         });
     }
 
-    public function registerErrorHandlers(): void
+    private function registerErrorHandlers(): void
     {
         $logger = $this->has('logger') ? $this->resolve('logger') : null;
 
@@ -195,22 +146,33 @@ class App
         );
     }
 
+    // Application Helpers //
 
     /**
-     * @param $name
-     * @return bool
+     * Application Singleton Factory
      */
-    public function has($name): bool
+    final public static function instance(ContainerInterface $container = null): self
     {
-        return $this->getContainer()->has($name);
+        if (null === static::$instance) {
+            static::$instance = new static($container);
+        }
+
+        return static::$instance;
     }
 
+    public static function env(string $key, $default = '')
+    {
+        if (isset($_ENV[$key])) {
+            return $_ENV[$key];
+        }
 
-    /**
-     * magic method to set a property of the app or insert something in the container
-     * @param $name
-     * @param $value
-     */
+        if (isset($_SERVER[$key])) {
+            return $_SERVER[$key];
+        }
+
+        return $default;
+    }
+
     public function __set($name, $value)
     {
         if (property_exists($this, $name)) {
@@ -220,13 +182,6 @@ class App
         }
     }
 
-
-    /**
-     * magic method to get a property of the App or resolve something from the container
-     * @param $name
-     * @return mixed
-     * @throws \ReflectionException
-     */
     public function __get($name)
     {
         if (property_exists($this, $name)) {
@@ -242,13 +197,6 @@ class App
         return $this->resolve($name);
     }
 
-
-    /**
-     * @param $fn
-     * @param array $args
-     * @return mixed
-     * @throws \Exception
-     */
     public function __call($fn, $args = [])
     {
         if (method_exists($this->slim, $fn)) {
@@ -257,16 +205,47 @@ class App
         throw new \Exception('Method not found :: ' . $fn);
     }
 
+    public function has($name): bool
+    {
+        return $this->getContainer()->has($name);
+    }
+
+    public function getContainer(): \Psr\Container\ContainerInterface
+    {
+        return $this->slim->getContainer();
+    }
+
+    public function registerInContainer(string $name, $value): void
+    {
+        ($this->slim->getContainer())->set($name, $value);
+    }
+
+    public function setConfig($param, $value): void
+    {
+        $dn = new DotNotation($this->configs);
+        $dn->set($param, $value);
+    }
+
+    public function getConfig($param, $defaultValue = null)
+    {
+        $dn = new DotNotation($this->configs);
+        return $dn->get($param, $defaultValue);
+    }
+    
+    public function isConsole(): bool
+    {
+        return php_sapi_name() === 'cli';
+    }
+
+    public function isEnvironment(string $environment)
+    {
+        return strtolower($this->env) === strtolower($environment);
+    }
 
     /**
-     * generate a url
-     *
-     * @param string $url
-     * @param boolean|null $showIndex pass null to assume config file value
-     * @param boolean $includeBaseUrl
-     * @return string
+     * Generate a Url
      */
-    public function url($url = '', $showIndex = null, $includeBaseUrl = true)
+    public function url(string $url = '', ?bool $showIndex = null, bool $includeBaseUrl = true): string
     {
         $baseUrl = $includeBaseUrl ? $this->getConfig('baseUrl') : '';
 
@@ -281,6 +260,35 @@ class App
         return strtolower($baseUrl . $indexFile . $url);
     }
 
+    /**
+     * Resolve and call a given class / method
+     *
+     * @param callable|array $classMethod [ClassNamespace, method]
+     * @throws \ReflectionException|HttpNotFoundException
+     */
+    public function resolveRoute($classMethod, array $requestParams = [], bool $useReflection = true): Response
+    {
+        $className = $classMethod[0];
+        $methodName = $classMethod[1];
+
+        try {
+
+            $controller = $this->getContainer()->get($className);
+
+        } catch (NotFoundExceptionInterface $e) {
+            $this->notFound();
+        }
+
+        if (!method_exists($controller, $methodName)) {
+            $this->notFound();
+        }
+
+        $method = new \ReflectionMethod($controller, $methodName);
+        $args = $this->resolveMethodDependencies($method, $requestParams);
+        $ret = $method->invokeArgs($controller, $args);
+
+        return $this->sendResponse($ret);
+    }
 
     /**
      * return a response object
@@ -289,7 +297,7 @@ class App
      *
      * @throws \ReflectionException
      */
-    public function sendResponse($resp)
+    public function sendResponse($resp): Response
     {
         if ($resp instanceof Response) {
             return $resp;
@@ -308,39 +316,54 @@ class App
         return $response;
     }
 
-
     /**
-     * resolve and call a given class / method
-     *
-     * @param callable|array $classMethod [ClassNamespace, method]
-     * @param array $requestParams params from url
-     * @param bool $useReflection
      * @throws \ReflectionException
      */
-    public function resolveRoute($classMethod, $requestParams = [], $useReflection = true)
+    public function code(int $httpCode = 200): Response
     {
-        $className = $classMethod[0];
-        $methodName = $classMethod[1];
-
-        try {
-
-            $controller = $this->getContainer()->get($className);
-
-        } catch (\DI\NotFoundException $e) {
-            $this->notFound();
-        }
-
-        if (!method_exists($controller, $methodName)) {
-            $this->notFound();
-        }
-
-        $method = new \ReflectionMethod($controller, $methodName);
-        $args = $this->resolveMethodDependencies($method, $requestParams);
-        $ret = $method->invokeArgs($controller, $args);
-
-        return $this->sendResponse($ret);
+        return $this->resolve(Response::class)->withStatus($httpCode);
     }
 
+    /**
+     * @throws \ReflectionException|\Exception
+     */
+    public function error(int $code = 500, string $error = '', array $messages = []): Response
+    {
+        $response = $this->resolve('response');
+
+        if ($this->isConsole()) {
+            $response = $response->withHeader('Content-type', 'text/plain');
+            $response->getBody()->write($error . PHP_EOL . implode(PHP_EOL, $messages));
+            return $response;
+        }
+
+        if ($this->resolve('request')->getHeaderLine('Accept') === 'application/json') {
+            $response = $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus($code);
+
+            $response->getBody()->write(json_encode([
+                'code'     => $code,
+                'error'    => $error,
+                'messages' => $messages,
+            ]));
+
+            return $response;
+        }
+
+        // Use application default handler
+        if (!array_key_exists('errorHandler', $this->configs)) {
+            throw new \Exception('No default error handler defined. Please configure it in application configurations.');
+        }
+
+        $response = is_callable($this->configs['errorHandler'])
+            ? call_user_func($this->configs['errorHandler'], $code, $error, $messages)
+            : (new $this->configs['errorHandler'])($code, $error, $messages);
+
+        return $response;
+    }
+
+    // Container //
 
     /**
      * resolve a dependency from the container
@@ -358,7 +381,6 @@ class App
         return is_callable($dependency) ? call_user_func_array($dependency, $params) : $dependency;
     }
 
-
     /**
      * resolve dependencies for a given class method
      *
@@ -372,7 +394,6 @@ class App
             return $this->resolveDependency($dependency, $urlParams);
         }, $method->getParameters());
     }
-
 
     /**
      * resolve a dependency parameter
@@ -404,79 +425,12 @@ class App
         return $this->resolve($name);
     }
 
-
     /**
      * @throws HttpNotFoundException
      */
     public function notFound(): void
     {
         throw new HttpNotFoundException($this->request);
-    }
-
-    /**
-     * @param int $httpCode
-     * @return mixed
-     *
-     * @throws \ReflectionException
-     */
-    public function code($httpCode = 200)
-    {
-        return $this->resolve(Response::class)->withStatus($httpCode);
-    }
-
-
-    /**
-     * @param int $code
-     * @param string $error
-     * @param array $messages
-     *
-     * @throws \ReflectionException
-     */
-    function error($code = 500, $error = '', $messages = [])
-    {
-        $response = $this->resolve('response');
-
-        if ($this->isConsole()) {
-            $response = $response->withHeader('Content-type', 'text/plain');
-            $response->getBody()->write($error . PHP_EOL . implode(PHP_EOL, $messages));
-            return $response;
-        }
-
-        if ($this->resolve('request')->getHeaderLine('Accept') === 'application/json') {
-            $response = $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus($code);
-            $response->getBody()->write(json_encode([
-                'code'     => $code,
-                'error'    => $error,
-                'messages' => $messages,
-            ]));
-            return $response;
-        }
-
-        // Use application default handler
-        if (!array_key_exists('errorHandler', $this->configs)) {
-            throw new \Exception('No default error handler defined. Please configure it in application configurations.');
-        }
-
-        $response = is_callable($this->configs['errorHandler'])
-            ? call_user_func($this->configs['errorHandler'], $code, $error, $messages)
-            : (new $this->configs['errorHandler'])($code, $error, $messages);
-
-        return $response;
-    }
-
-    public static function env(string $key, $default = '')
-    {
-        if (isset($_ENV[$key])) {
-            return $_ENV[$key];
-        }
-
-        if (isset($_SERVER[$key])) {
-            return $_SERVER[$key];
-        }
-
-        return $default;
     }
 
 }

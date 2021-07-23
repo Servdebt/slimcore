@@ -4,6 +4,7 @@ namespace Servdebt\SlimCore;
 
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Servdebt\SlimCore\Container\Container;
 use Servdebt\SlimCore\Handlers\NotAllowed;
 use Servdebt\SlimCore\Handlers\NotFound;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -15,6 +16,7 @@ use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
 use Slim\Handlers\ErrorHandler;
+use Slim\Psr7\Factory\ResponseFactory;
 use function DI\get;
 
 class App
@@ -38,27 +40,17 @@ class App
     {
         $this->appName = $this->isConsole() ? 'console' : 'http';
 
-        $this->setContainer($container);
-        $this->slim = AppFactory::create();
-
-        $this->registerInContainer(Request::class, (ServerRequestCreatorFactory::create())->createServerRequestFromGlobals());
-        $this->registerInContainer(Response::class, $this->slim->getResponseFactory()->createResponse());
-    }
-
-    private function setContainer(ContainerInterface $container = null): void
-    {
         if (!$container) {
-            $builder = new \DI\ContainerBuilder();
-            $builder->addDefinitions([
-                'request' => get(\Psr\Http\Message\ServerRequestInterface::class),
-                'response' => get(\Psr\Http\Message\ResponseInterface::class),
-            ]);
-            $builder->useAutowiring(true);
-            $builder->useAnnotations(false);
-            $container = $builder->build();
+            $container = (new Container())
+                ->withAutoWiring()
+                ->alias(Request::class, 'request')
+                ->alias(Response::class, 'response')
+                ->set(Request::class, (ServerRequestCreatorFactory::create())->createServerRequestFromGlobals())
+                ->set(Response::class, (new ResponseFactory)->createResponse());
         }
 
         AppFactory::setContainer($container);
+        $this->slim = AppFactory::create();
     }
 
     public function loadEnv(string $path, string $filename = '.env', array $mandatoryConfigs = []): void
@@ -77,11 +69,11 @@ class App
 
     public function run(): void
     {
-        if(isset($this->configs['timezone'])){
+        if (isset($this->configs['timezone'])) {
             date_default_timezone_set($this->configs['timezone']);
         }
 
-        if(isset($this->configs['locale'])){
+        if (isset($this->configs['locale'])) {
             \Locale::setDefault($this->configs['locale']);
         }
 
@@ -210,14 +202,14 @@ class App
         return $this->getContainer()->has($name);
     }
 
-    public function getContainer(): \Psr\Container\ContainerInterface
+    public function getContainer(): ContainerInterface
     {
         return $this->slim->getContainer();
     }
 
     public function registerInContainer(string $name, $value): void
     {
-        ($this->slim->getContainer())->set($name, $value);
+        ($this->getContainer())->set($name, $value);
     }
 
     public function setConfig($param, $value): void
@@ -231,7 +223,7 @@ class App
         $dn = new DotNotation($this->configs);
         return $dn->get($param, $defaultValue);
     }
-    
+
     public function isConsole(): bool
     {
         return php_sapi_name() === 'cli';

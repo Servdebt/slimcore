@@ -80,8 +80,8 @@ class App
         }
 
         $this->addRoutingMiddleware();
-        $this->registerProviders();
         $this->registerMiddleware();
+        $this->registerProviders();
         $this->registerErrorHandlers();
 
         $this->slim->run($this->request);
@@ -260,7 +260,7 @@ class App
      * @param callable|array $classMethod [ClassNamespace, method]
      * @throws \ReflectionException|HttpNotFoundException
      */
-    public function resolveRoute($classMethod, array $requestParams = [], bool $useReflection = true): Response
+    public function resolveRoute($classMethod, array $requestParams = []): Response
     {
         $className = $classMethod[0];
         $methodName = $classMethod[1];

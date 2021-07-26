@@ -10,32 +10,29 @@ class Filesystem implements ProviderInterface
 {
     public static function register(App $app, string $serviceName, array $settings = [])
     {
-        $app->registerInContainer($serviceName, function() use ($settings) {
-            return function($configsOverride = []) use ($settings) {
+        $app->registerInContainer($serviceName, function($configsOverride = []) use ($settings) {
+            $configs = array_merge($settings, $configsOverride);
 
-                $configs = array_merge($settings, $configsOverride);
+            $filesystem = null;
+            switch ($configs['driver']) {
+                case 'local':
+                    $filesystem = self::createLocal($configs);
+                    break;
 
-                $filesystem = null;
-                switch ($configs['driver']) {
-                    case 'local':
-                        $filesystem = self::createLocal($configs);
-                        break;
+                case 'ftp':
+                    $filesystem = self::createFtp($configs);
+                    break;
 
-                    case 'ftp':
-                        $filesystem = self::createFtp($configs);
-                        break;
+                case 's3Async':
+                    $filesystem = self::createS3Async($configs);
+                    break;
 
-                    case 's3Async':
-                        $filesystem = self::createS3Async($configs);
-                        break;
+                default:
+                    throw new \Exception("Filesystem driver {$configs['driver']} not found");
+                    break;
+            }
 
-                    default:
-                        throw new \Exception("Filesystem driver {$configs['driver']} not found");
-                        break;
-                }
-
-                return $filesystem;
-            };
+            return $filesystem;
         });
     }
 

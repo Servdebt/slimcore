@@ -15,9 +15,7 @@ use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
-use Slim\Handlers\ErrorHandler;
 use Slim\Psr7\Factory\ResponseFactory;
-use function DI\get;
 
 class App
 {
@@ -60,8 +58,6 @@ class App
         $dotenv = \Dotenv\Dotenv::createImmutable($path, $filename);
         $dotenv->required($mandatoryConfigs);
         $dotenv->load();
-
-        $this->env = self::env('APP_ENV', self::DEVELOPMENT);
     }
 
     public function setConfigs(array $configs): void
@@ -71,6 +67,8 @@ class App
 
     public function run(): void
     {
+        $this->env = $this->getConfig('env');
+
         if (isset($this->configs['timezone'])) {
             date_default_timezone_set($this->configs['timezone']);
         }

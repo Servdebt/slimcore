@@ -10,7 +10,7 @@ class Filesystem implements ProviderInterface
 {
     public static function register(App $app, string $serviceName, array $settings = [])
     {
-        $app->registerInContainer($serviceName, function($c) use ($settings) {
+        $app->registerInContainer($serviceName, function() use ($settings) {
             return function($configsOverride = []) use ($settings) {
 
                 $configs = array_merge($settings, $configsOverride);

@@ -51,7 +51,7 @@ final class Error extends \Slim\Handlers\ErrorHandler
             }
 
             if(!$displayErrorDetails && $errorCode === 422){
-                $errorMsg = $exception->getMessage();
+                $errorMsg = 'Unable to validate request';
             }
 
             return $app->error($errorCode, $errorMsg, $messages);

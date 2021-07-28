@@ -44,11 +44,16 @@ final class Error extends \Slim\Handlers\ErrorHandler
             ]);
         }
 
-        if ($request->getHeaderLine('Accept') == 'application/json' || !$displayErrorDetails) {
-            if (!$displayErrorDetails && $errorCode != 422) {
+        if ($request->getHeaderLine('Accept') === 'application/json' || !$displayErrorDetails) {
+            if (!$displayErrorDetails) {
                 $errorMsg = "Ops. An error occurred";
                 $messages = [];
             }
+
+            if(!$displayErrorDetails && $errorCode === 422){
+                $errorMsg = $exception->getMessage();
+            }
+
             return $app->error($errorCode, $errorMsg, $messages);
         }
 

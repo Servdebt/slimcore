@@ -1,19 +1,13 @@
 {
-    "name": "jupitern/slimcore",
-    "homepage": "https://github.com/jupitern/slimcore",
+    "name": "servdebt/slimcore",
+    "homepage": "https://github.com/servdebt/slimcore",
     "license": "MIT",
-    "authors": [
-        {
-            "name"    : "Nuno Chaves",
-            "role"    : "Developer"
-        }
-    ],
     "support": {
-        "source": "https://github.com/jupitern/slimcore",
-        "issues": "https://github.com/jupitern/slimcore/issues"
+        "source": "https://github.com/servdebt/slimcore",
+        "issues": "https://github.com/servdebt/slimcore/issues"
     },
     "require": {
-        "php": ">=7.2",
+        "php": ">=7.4",
         "ext-json": "*",
         "ext-libxml": "*",
         "ext-simplexml": "*",

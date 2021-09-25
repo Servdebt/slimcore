@@ -1,6 +1,6 @@
 <?php
 
-namespace Servdebt\SlimCore\Utils;
+namespace Jupitern\Slim3\Utils;
 
 class Session
 {

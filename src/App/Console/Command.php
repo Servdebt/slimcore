@@ -1,6 +1,6 @@
 <?php
 
-namespace Servdebt\SlimCore\App\Console;
+namespace Jupitern\Slim3\App\Console;
 
 class Command
 {

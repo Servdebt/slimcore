@@ -1,39 +1,43 @@
 <?php
 
-namespace Servdebt\SlimCore\ServiceProviders;
+namespace Jupitern\Slim3\ServiceProviders;
 
-use Servdebt\SlimCore\App;
-use Servdebt\SlimCore\Filesystem\Filesystem as ExtendedFilesystem;
-use Servdebt\SlimCore\Filesystem\S3\AsyncAwsS3Adapter;
+use Jupitern\Slim3\Filesystem\Filesystem as FilesystemFilesystem;
+use Jupitern\Slim3\ServiceProviders\ProviderInterface;
+use Jupitern\Slim3\Filesystem\Filesystem as ExtendedFilesystem;
+use Jupitern\Slim3\Filesystem\S3\AsyncAwsS3Adapter;
 
 class Filesystem implements ProviderInterface
 {
-    public static function register(App $app, string $serviceName, array $settings = [])
+    public static function register(string $serviceName, array $settings = [])
     {
-        $app->registerInContainer($serviceName, function($configsOverride = []) use ($settings) {
-            $configs = array_merge($settings, $configsOverride);
+        app()->getContainer()[$serviceName] = function ($c) use ($settings) {
+            return function ($configsOverride = []) use ($settings) {
 
-            $filesystem = null;
-            switch ($configs['driver']) {
-                case 'local':
-                    $filesystem = self::createLocal($configs);
-                    break;
+                $configs = array_merge($settings, $configsOverride);
 
-                case 'ftp':
-                    $filesystem = self::createFtp($configs);
-                    break;
+                $filesystem = null;
+                switch ($configs['driver']) {
+                    case 'local':
+                        $filesystem = self::createLocal($configs);
+                        break;
 
-                case 's3Async':
-                    $filesystem = self::createS3Async($configs);
-                    break;
+                    case 'ftp':
+                        $filesystem = self::createFtp($configs);
+                        break;
 
-                default:
-                    throw new \Exception("Filesystem driver {$configs['driver']} not found");
-                    break;
-            }
+                    case 's3Async':
+                        $filesystem = self::createS3Async($configs);
+                        break;
 
-            return $filesystem;
-        });
+                    default:
+                        throw new \Exception("filesystem driver {$configs['driver']} not found");
+                        break;
+                }
+
+                return $filesystem;
+            };
+        };
     }
 
     public static function createLocal($configs)
@@ -50,7 +54,7 @@ class Filesystem implements ProviderInterface
 
         return new ExtendedFilesystem($adapter, [], null);
     }
-
+    
     public static function createS3Async($settings)
     {
         $client = new \AsyncAws\SimpleS3\SimpleS3Client([

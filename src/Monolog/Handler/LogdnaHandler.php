@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Servdebt\SlimCore\Monolog\Handler;
+namespace Jupitern\Slim3\Monolog\Handler;
 use Monolog\Formatter\FormatterInterface;
 
 /**
@@ -101,10 +101,10 @@ class LogdnaHandler extends \Monolog\Handler\AbstractProcessingHandler {
     }
 
     /**
-     * @return \Servdebt\SlimCore\Monolog\Formatter\LogdnaFormatter
+     * @return \Jupitern\Slim3\Monolog\Formatter\LogdnaFormatter
      */
     protected function getDefaultFormatter(): FormatterInterface 
     {
-        return new \Servdebt\SlimCore\Monolog\Formatter\LogdnaFormatter();
+        return new \Jupitern\Slim3\Monolog\Formatter\LogdnaFormatter();
     }
 }

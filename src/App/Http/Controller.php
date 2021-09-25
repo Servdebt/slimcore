@@ -1,9 +1,6 @@
 <?php
 
-namespace Servdebt\SlimCore\App\Http;
-
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Message\ResponseInterface as Response;
+namespace Jupitern\Slim3\App\Http;
 
 class Controller
 {
@@ -13,10 +10,10 @@ class Controller
     public $response;
 
 
-    public function __construct(Request $request, Response $response)
+    public function __construct()
     {
-        $this->request  = $request;
-        $this->response = $response;
+        $this->request  = app()->request;
+        $this->response = app()->response;
     }
 
 

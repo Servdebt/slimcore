@@ -1,7 +1,7 @@
 <?php
 
-namespace Servdebt\SlimCore\Utils;
-use Servdebt\SlimCore\App;
+namespace Jupitern\Slim3\Utils;
+use Jupitern\Slim3\App;
 use Predis\Client;
 use Predis\ClientInterface;
 use Traversable;

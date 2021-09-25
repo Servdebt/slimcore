@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Servdebt\SlimCore\Monolog\Formatter;
+namespace Jupitern\Slim3\Monolog\Formatter;
 
 /**
  * Encode records in a json format compatible with Logdna

@@ -1,5 +1,5 @@
 <?php
-namespace Servdebt\SlimCore\Monolog\Handler;
+namespace Jupitern\Slim3\Monolog\Handler;
 
 use Exception;
 use Monolog\Formatter\LineFormatter;

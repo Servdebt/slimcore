@@ -1,6 +1,6 @@
 <?php
 
-namespace Servdebt\SlimCore\Filesystem\S3;
+namespace Jupitern\Slim3\Filesystem\S3;
 
 use AsyncAws\S3\S3Client;
 use League\Flysystem\AsyncAwsS3\VisibilityConverter;
@@ -11,6 +11,13 @@ class AsyncAwsS3Adapter extends \League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter
     protected $client;
     protected $bucket;
     protected $prefix;
+    
+    public const EXTRA_METADATA_FIELDS = [
+        'Metadata',
+        'StorageClass',
+        'ETag',
+        'VersionId',
+    ];
 
     /**
      * * Important to validade if construct changes during package upgrades.

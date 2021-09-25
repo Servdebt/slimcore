@@ -1,11 +1,10 @@
 <?php
 
-namespace Servdebt\SlimCore\Handlers;
+namespace Jupitern\Slim3\Handlers;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
-use Throwable;
 
-final class NotAllowed extends \Slim\Handlers\ErrorHandler
+final class NotAllowed extends \Slim\Handlers\NotFound
 {
 
 	/**
@@ -15,20 +14,13 @@ final class NotAllowed extends \Slim\Handlers\ErrorHandler
 	 * @return ResponseInterface
 	 * @throws \ReflectionException
 	 */
-    public function __invoke(
-        Request $request,
-        Throwable $exception,
-        bool $displayErrorDetails,
-        bool $logErrors,
-        bool $logErrorDetails
-    ): Response {
+	public function __invoke(Request $request, Response $response)
+	{
 		if (app()->isConsole()) {
-		    $response = app()->resolve('response');
-		    $response->getBody()->write("Error: request does not match any command::method or mandatory params are not properly set\n");
-			return $response;
+			return $response->write("Error: request does not match any command::method or mandatory params are not properly set\n");
 		}
 
-        return app()->error(405, "Method ".$request->getMethod()." not allowed for uri ". $request->getUri()->getPath());
+        return app()->error(405, "Method ".$request->getMethod()." not allowed for uri ". $request->getUri()->getPath() ." not found");
 	}
 
 

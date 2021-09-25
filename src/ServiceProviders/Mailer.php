@@ -1,33 +1,34 @@
 <?php
 
-namespace Servdebt\SlimCore\ServiceProviders;
-
+namespace Jupitern\Slim3\ServiceProviders;
 use PHPMailer\PHPMailer\PHPMailer;
-use Servdebt\SlimCore\App;
 
 class Mailer implements ProviderInterface
 {
 
-    public static function register(App $app, $serviceName, array $settings = [])
-    {
-        $app->registerInContainer($serviceName, function($configsOverride = []) use ($settings) {
-            $configs = array_merge($settings, $configsOverride);
+	public static function register($serviceName, array $settings = [])
+	{
+		app()->getContainer()[$serviceName] = function ($c) use($settings) {
+			return function($configsOverride = []) use($settings) {
 
-            $mail = new PHPMailer;
-            $mail->CharSet = "UTF-8";
-            $mail->isSMTP();
-            $mail->isHTML(true);
-            $mail->Host = $configs['host'];
-            $mail->SMTPAuth = true;
-            $mail->Username = $configs['username'];
-            $mail->Password = $configs['password'];
-            $mail->SMTPSecure = $configs['secure'];
-            $mail->Port = $configs['port'];
+				$configs = array_merge($settings, $configsOverride);
 
-            $mail->setFrom($configs['from'], $configs['fromName']);
+				$mail = new PHPMailer;
+				$mail->CharSet = "UTF-8";
+				$mail->isSMTP();
+				$mail->isHTML(true);
+				$mail->Host = $configs['host'];
+				$mail->SMTPAuth = true;
+				$mail->Username = $configs['username'];
+				$mail->Password = $configs['password'];
+				$mail->SMTPSecure = $configs['secure'];
+				$mail->Port = $configs['port'];
 
-            return $mail;
-        });
-    }
+				$mail->setFrom($configs['from'], $configs['fromName']);
+
+				return $mail;
+			};
+		};
+	}
 
 }

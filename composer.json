@@ -1,6 +1,6 @@
 {
-    "name": "jupitern/slim-core",
-    "homepage": "https://github.com/jupitern/slim-core",
+    "name": "jupitern/slimcore",
+    "homepage": "https://github.com/jupitern/slimcore",
     "license": "MIT",
     "authors": [
         {
@@ -9,8 +9,8 @@
         }
     ],
     "support": {
-        "source": "https://github.com/jupitern/slim-core",
-        "issues": "https://github.com/jupitern/slim-core/issues"
+        "source": "https://github.com/jupitern/slimcore",
+        "issues": "https://github.com/jupitern/slimcore/issues"
     },
     "require": {
         "php": ">=7.2",

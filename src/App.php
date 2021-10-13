@@ -319,7 +319,7 @@ class App
     /**
      * @throws \ReflectionException|\Exception
      */
-    public function error(int $code = 500, string $error = '', array $messages = []): Response
+    public function error(int $status = 500, string $error = '', array $messages = [], $code = null): Response
     {
         $response = $this->resolve(Response::class);
 
@@ -332,10 +332,10 @@ class App
         if ($this->resolve(Request::class)->getHeaderLine('Accept') === 'application/json') {
             $response = $response
                 ->withHeader('Content-Type', 'application/json')
-                ->withStatus($code);
+                ->withStatus($status);
 
             $response->getBody()->write(json_encode([
-                'code'     => $code,
+                'code'     => $code ?? $status,
                 'error'    => $error,
                 'messages' => $messages,
             ]));

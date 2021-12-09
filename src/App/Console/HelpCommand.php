@@ -4,7 +4,6 @@ namespace Jupitern\Slim3\App\Console;
 use ReflectionMethod;
 use DirectoryIterator;
 
-
 class HelpCommand extends Command
 {
 

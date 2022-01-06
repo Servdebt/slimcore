@@ -349,8 +349,8 @@ class App
         }
 
         $response = is_callable($this->configs['errorHandler'])
-            ? call_user_func($this->configs['errorHandler'], $code ?? $status, $error, $messages)
-            : (new $this->configs['errorHandler'])($code ?? $status, $error, $messages);
+            ? call_user_func($this->configs['errorHandler'], $status, $error, $messages)
+            : (new $this->configs['errorHandler'])($status, $error, $messages);
 
         return $response;
     }

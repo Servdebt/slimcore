@@ -12,19 +12,29 @@ class HelpCommand extends Command
     {
         $ret  = PHP_EOL. "usage: php ".ROOT_PATH."cli.php <command-name> <method-name> [parameters...]" . PHP_EOL . PHP_EOL;
         $ret .= "The following ". (empty($command) ? "commands" : "tasks") ." are available:" . PHP_EOL;
-
-        $iterator = new DirectoryIterator(APP_PATH.'Console');
-
+      
         if (!empty($command) && is_file(APP_PATH.'Console'.DS.$command.".php")) {
             $fileinfo = new \SplFileInfo(APP_PATH.'Console'.DS.$command.".php");
             $ret .= $this->listClassMethods($fileinfo->getFilename());
         }
+        else if (!empty($command) && is_file(__DIR__.DS.$command.".php")) {
+            $fileinfo = new \SplFileInfo(__DIR__.DS.$command.".php");
+            $ret .= $this->listClassMethods($fileinfo->getFilename(), "\\Servdebt\\SlimCore\\App\Console\\");
+        }
         else {
+            $iterator = new DirectoryIterator(APP_PATH.'Console');
             foreach ($iterator as $fileinfo) {
-                if ($fileinfo->isFile() && $fileinfo->getFilename() != "Command.php") {
+                if ($fileinfo->isFile()) {
                     $ret .= $this->listClassMethods($fileinfo->getFilename());
                 }
             }
+            $iterator = new DirectoryIterator(__DIR__);
+            foreach ($iterator as $fileinfo) {
+                if ($fileinfo->isFile() && !in_array($fileinfo->getFilename(), ["Command.php", "CommandRouter.php", "HelpCommand.php"])) {
+                    $ret .= $this->listClassMethods($fileinfo->getFilename(), "\\Servdebt\\SlimCore\\App\Console\\");
+                }
+            }
+
         }
 
         return $ret;
@@ -33,14 +43,15 @@ class HelpCommand extends Command
 
     /**
      * @param string $filename
+     * @param string $namespace
      * @return string
      * @throws \ReflectionException
      */
-    private function listClassMethods(string $filename)
+    private function listClassMethods(string $filename, string $namespace = "\\App\\Console\\")
     {
         $ret = "";
         $className = str_replace(".php", "", $filename);
-        $class = new \ReflectionClass("\\App\\Console\\$className");
+        $class = new \ReflectionClass($namespace.$className);
 
         if (!$class->isAbstract()) {
             $ret .= "- " . $className . PHP_EOL;

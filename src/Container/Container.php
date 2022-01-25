@@ -78,11 +78,7 @@ class Container implements ContainerInterface
                 throw new NotFoundException(sprintf('Could not find container definition for %s', $id));
             }
         }
-
-//        if (is_callable($this->container[$id])) {
-//            $this->container[$id] = $this->resolve($id);
-//        }
-
+        
         return $this->container[$id];
     }
 
@@ -95,7 +91,7 @@ class Container implements ContainerInterface
      *
      * @return bool
      */
-    public function has($id)
+    public function has(string $id): bool
     {
         if (isset($this->alias[$id])) {
             return isset($this->container[$this->alias[$id]]);

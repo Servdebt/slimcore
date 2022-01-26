@@ -1,13 +1,12 @@
 <?php
 
 namespace Servdebt\SlimCore\App\Console;
-use ReflectionMethod;
+
 use DirectoryIterator;
+use ReflectionMethod;
 
-
-class HelpCommand extends Command
+class Help extends Command
 {
-
 	public function show($command = '')
     {
         $ret  = PHP_EOL. "usage: php ".ROOT_PATH."cli.php <command-name> <method-name> [parameters...]" . PHP_EOL . PHP_EOL;
@@ -39,7 +38,6 @@ class HelpCommand extends Command
 
         return $ret;
     }
-
 
     /**
      * @param string $filename

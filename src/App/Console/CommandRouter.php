@@ -15,7 +15,6 @@ class CommandRouter
     {
         ob_start();
         set_time_limit(0);
-        ini_set('memory_limit', '2000M');
 
         // get params from command line
         $cliCommandParts = (array)$argv;
@@ -29,7 +28,7 @@ class CommandRouter
 
         // early return: if no params given, return HELP
         if (empty($cliCommandParts)) {
-            return $this->app->resolveRoute([HelpCommand::class, "show"], []);
+            return $this->app->resolveRoute([Help::class, "show"], []);
         }
     
         // find where params start being key=val pairs
@@ -47,7 +46,7 @@ class CommandRouter
         }
         // early return: if only command name is given, return HELP for given command
         elseif (count($commandParts) == 1) {
-            return $this->app->resolveRoute([HelpCommand::class, 'show'], ['command' => $cliCommandParts[0]]);
+            return $this->app->resolveRoute([Help::class, 'show'], ['command' => $cliCommandParts[0]]);
 
         }
 
@@ -76,10 +75,10 @@ class CommandRouter
         }
 
         return $response;
-
     }
 
-    private function tryResolveRoute($namespace, $class, $method, $params) {
+    private function tryResolveRoute($namespace, $class, $method, $params)
+    {
         try {
             return $this->app->resolveRoute([$namespace.'\\'.$class, $method], $params);
         } catch (\Slim\Exception\HttpNotFoundException  $exception) {

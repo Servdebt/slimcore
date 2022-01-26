@@ -268,7 +268,11 @@ class App
             $controller = $this->getContainer()->get($className);
 
         } catch (NotFoundExceptionInterface $e) {
-            $this->notFound();
+            if (str_contains($e->getMessage(), $className)) {
+                $this->notFound();
+            }
+
+            throw $e;
         }
 
         if (!method_exists($controller, $methodName)) {

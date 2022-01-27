@@ -234,6 +234,24 @@ class App
         return strtolower($this->env) === strtolower($environment);
     }
 
+    public function envOverride() {
+        if (! $this->isConsole()) {
+            return null;
+        }
+
+        $envOverride = null;
+        $cliCommandParts = (array)$GLOBALS['argv'];
+        
+        // remove cli.php
+        array_shift($cliCommandParts);
+    
+        if (in_array($cliCommandParts[0] ?? '', [self::DEVELOPMENT, self::STAGING, self::PRODUCTION])) {
+            $envOverride = $cliCommandParts[0];
+        }
+
+        return $envOverride;
+    }
+
     /**
      * Generate a Url
      */
@@ -268,7 +286,11 @@ class App
             $controller = $this->getContainer()->get($className);
 
         } catch (NotFoundExceptionInterface $e) {
-            $this->notFound();
+            if (str_contains($e->getMessage(), $className)) {
+                $this->notFound();
+            }
+
+            throw $e;
         }
 
         if (!method_exists($controller, $methodName)) {

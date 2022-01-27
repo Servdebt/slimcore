@@ -245,7 +245,7 @@ class App
         // remove cli.php
         array_shift($cliCommandParts);
     
-        if (in_array($cliCommandParts[0] ?? '', [\Servdebt\SlimCore\App::DEVELOPMENT, \Servdebt\SlimCore\App::STAGING, \Servdebt\SlimCore\App::PRODUCTION])) {
+        if (in_array($cliCommandParts[0] ?? '', [self::DEVELOPMENT, self::STAGING, self::PRODUCTION])) {
             $envOverride = $cliCommandParts[0];
         }
 
@@ -286,7 +286,11 @@ class App
             $controller = $this->getContainer()->get($className);
 
         } catch (NotFoundExceptionInterface $e) {
-            $this->notFound();
+            if (str_contains($e->getMessage(), $className)) {
+                $this->notFound();
+            }
+
+            throw $e;
         }
 
         if (!method_exists($controller, $methodName)) {

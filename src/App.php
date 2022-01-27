@@ -234,6 +234,24 @@ class App
         return strtolower($this->env) === strtolower($environment);
     }
 
+    public function envOverride() {
+        if (! $this->isConsole()) {
+            return null;
+        }
+
+        $envOverride = null;
+        $cliCommandParts = (array)$GLOBALS['argv'];
+        
+        // remove cli.php
+        array_shift($cliCommandParts);
+    
+        if (in_array($cliCommandParts[0] ?? '', [\Servdebt\SlimCore\App::DEVELOPMENT, \Servdebt\SlimCore\App::STAGING, \Servdebt\SlimCore\App::PRODUCTION])) {
+            $envOverride = $cliCommandParts[0];
+        }
+
+        return $envOverride;
+    }
+
     /**
      * Generate a Url
      */

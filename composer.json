@@ -9,7 +9,7 @@
     "require": {
         "php": ">=7.4",
         "psr/log": "1.1.*",
-        "monolog/monolog": "2.1.*",
+        "monolog/monolog": "2.3.*",
         "slashtrace/slashtrace": "1.1.*",
         "slim/slim": "4.8.*",
         "ext-zlib": "*",

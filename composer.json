@@ -14,7 +14,7 @@
         "slim/slim": "4.8.*",
         "ext-zlib": "*",
         "slim/psr7": "1.4.*",
-        "vlucas/phpdotenv": "^5.3"
+        "vlucas/phpdotenv": "^5.4"
     },
     "autoload": {
         "psr-4": {

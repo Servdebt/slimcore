@@ -7,7 +7,8 @@ use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 
 class Session extends Middleware
 {
-    public function __invoke(Request $request, RequestHandler $handler): ResponseInterface
+    
+    public function process(Request $request, RequestHandler $handler): ResponseInterface
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
 
@@ -33,4 +34,5 @@ class Session extends Middleware
 
         return $handler->handle($request);
     }
+    
 }

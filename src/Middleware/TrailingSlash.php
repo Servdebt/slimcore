@@ -8,7 +8,8 @@ use Slim\Psr7\Response;
 
 class TrailingSlash extends Middleware
 {
-    public function __invoke(Request $request, RequestHandler $handler): ResponseInterface
+    
+    public function process(Request $request, RequestHandler $handler): ResponseInterface
     {
         $uri = $request->getUri();
         $path = $uri->getPath();
@@ -34,4 +35,5 @@ class TrailingSlash extends Middleware
 
         return $handler->handle($request);
     }
+    
 }

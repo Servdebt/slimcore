@@ -11,7 +11,7 @@ use Slim\Psr7\Uri;
 class Console extends Middleware
 {
 
-    public function __invoke(Request $request, RequestHandler $handler): ResponseInterface
+    public function process(Request $request, RequestHandler $handler): ResponseInterface
     {
         if (app()->isConsole()) {
             $data = Environment::mock([
@@ -26,4 +26,5 @@ class Console extends Middleware
 
         return $handler->handle($request);
     }
+    
 }

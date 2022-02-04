@@ -12,6 +12,40 @@ class AsyncAwsS3Adapter extends \League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter
     protected $bucket;
     protected $prefix;
 
+    public const AVAILABLE_OPTIONS = [
+        'ACL',
+        'CacheControl',
+        'ContentDisposition',
+        'ContentEncoding',
+        'ContentLength',
+        'ContentType',
+        'Expires',
+        'GrantFullControl',
+        'GrantRead',
+        'GrantReadACP',
+        'GrantWriteACP',
+        'Metadata',
+        'RequestPayer',
+        'SSECustomerAlgorithm',
+        'SSECustomerKey',
+        'SSECustomerKeyMD5',
+        'SSEKMSKeyId',
+        'ServerSideEncryption',
+        'StorageClass',
+        'Tagging',
+        'WebsiteRedirectLocation',
+    ];
+
+    /**
+     * @var string[]
+     */
+    public const EXTRA_METADATA_FIELDS = [
+        'Metadata',
+        'StorageClass',
+        'ETag',
+        'VersionId',
+    ];
+
     /**
      * * Important to validade if construct changes during package upgrades.
      *

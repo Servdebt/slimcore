@@ -13,18 +13,22 @@ use Psr\Http\Message\{ResponseInterface, ServerRequestInterface as Request};
  */
 class ValidateJson extends Middleware
 {
-    public function __invoke(Request $request, RequestHandler $handler): ResponseInterface
+
+    public function process(Request $request, RequestHandler $handler): ResponseInterface
     {
         $body = $request->getBody()->getContents();
 
-        $contentType = $request->getHeader('Content-Type')[0] ?? null;
+        $contentType = $request->getHeaderLine('Content-Type') ?? null;
 
-        if ($contentType === 'application/json' && !empty($body)) {
+        if (str_contains($contentType, 'application/json') && !empty($body)) {
             $json = json_decode($body);
 
             if ($json === null || json_last_error() != JSON_ERROR_NONE) {
                 return app()->error(422, "Invalid request. Json message malformed");
             }
+
+            $request = $request->withParsedBody($json);
+            app()->registerInContainer(Request::class, $request);
         }
 
         return $handler->handle($request);

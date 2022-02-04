@@ -10,11 +10,11 @@
         "php": ">=7.4",
         "psr/log": "1.1.*",
         "monolog/monolog": "2.3.*",
-        "slashtrace/slashtrace": "1.1.*",
+        "slashtrace/slashtrace": "1.0.0",
         "slim/slim": "4.8.*",
         "ext-zlib": "*",
         "slim/psr7": "1.4.*",
-        "vlucas/phpdotenv": "^5.3"
+        "vlucas/phpdotenv": "^5.4"
     },
     "autoload": {
         "psr-4": {

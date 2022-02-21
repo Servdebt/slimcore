@@ -55,9 +55,7 @@ class App
 
     public function loadEnv(string $path, string $filename = '.env', array $mandatoryConfigs = []): void
     {
-        $envOverride = $this->envOverride();
-
-        $dotenv = \Dotenv\Dotenv::createImmutable($path, $filename . ($envOverride ? ".{$envOverride}" : ""));
+        $dotenv = \Dotenv\Dotenv::createImmutable($path, $filename);
         $dotenv->required($mandatoryConfigs);
         $dotenv->load();
 
@@ -236,22 +234,20 @@ class App
         return strtolower($this->env) === strtolower($environment);
     }
 
-    public function envOverride() {
-        if (! $this->isConsole()) {
-            return null;
+    public function determineEnvFilename($filename = null) : string
+    {
+        if ($this->isConsole()) {
+            $cliCommandParts = (array)$GLOBALS['argv'];
+
+            // remove cli.php
+            array_shift($cliCommandParts);
+
+            if (in_array($cliCommandParts[0] ?? '', [self::DEVELOPMENT, self::STAGING, self::PRODUCTION])) {
+                return $filename.".".$cliCommandParts[0];
+            }
         }
 
-        $envOverride = null;
-        $cliCommandParts = (array)$GLOBALS['argv'];
-        
-        // remove cli.php
-        array_shift($cliCommandParts);
-    
-        if (in_array($cliCommandParts[0] ?? '', [self::DEVELOPMENT, self::STAGING, self::PRODUCTION])) {
-            $envOverride = $cliCommandParts[0];
-        }
-
-        return $envOverride;
+        return $filename;
     }
 
     /**

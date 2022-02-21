@@ -55,9 +55,13 @@ class App
 
     public function loadEnv(string $path, string $filename = '.env', array $mandatoryConfigs = []): void
     {
-        $dotenv = \Dotenv\Dotenv::createImmutable($path, $filename);
+        $envOverride = $this->envOverride();
+
+        $dotenv = \Dotenv\Dotenv::createImmutable($path, $filename . ($envOverride ? ".{$envOverride}" : ""));
         $dotenv->required($mandatoryConfigs);
         $dotenv->load();
+
+        $this->env = App::env('APP_ENV');
     }
 
     public function setConfigs(array $configs): void
@@ -67,8 +71,6 @@ class App
 
     public function run(): void
     {
-        $this->env = $this->getConfig('env');
-
         if (isset($this->configs['timezone'])) {
             date_default_timezone_set($this->configs['timezone']);
         }

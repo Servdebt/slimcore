@@ -87,15 +87,6 @@ class Ffmpeg
 
         shell_exec($cmd);
         return true;
-
-//        $process = new Process(explode(" ", $cmd));
-//        $process->run();
-//
-//        if (!$process->isSuccessful()) {
-//            $this->error = $process->getErrorOutput();
-//        }
-//
-//        return $process->isSuccessful();
     }
 
 

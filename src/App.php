@@ -77,6 +77,11 @@ class App
             \Locale::setDefault($this->configs['locale']);
         }
 
+        if (isset($this->configs['routerCacheFile']) && !empty($this->configs['routerCacheFile'])) {
+            $routeCollector = $this->slim->getRouteCollector();
+            $routeCollector->setCacheFile($this->configs['routerCacheFile']);
+        }
+
         $this->addRoutingMiddleware();
         $this->registerMiddleware();
         $this->registerProviders();

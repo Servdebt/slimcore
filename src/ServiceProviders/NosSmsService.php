@@ -1,7 +1,7 @@
 <?php
 
 namespace Servdebt\SlimCore\ServiceProviders;
-use Lib\SMS\NosRESTGateway;
+use Servdebt\SlimCore\Utils\NosRESTGateway;
 use Servdebt\SlimCore\App;
 
 class NosSmsService implements ProviderInterface

@@ -8,7 +8,7 @@ use \Locale;
 
 class Formatter
 {
-    
+
     /**
      * @param DateTime $datetime
      * @param bool $full
@@ -52,14 +52,14 @@ class Formatter
      * @param string $currencyCode
      * @return string
      */
-    public static function currency(float $value, int $decimals = 2, string $currencyCode = 'EUR' ) :string
+    public static function currency(?float $value, int $decimals = 2, string $currencyCode = 'EUR' ) :string
     {
         $nf = new NumberFormatter(Locale::getDefault(), NumberFormatter::CURRENCY);
         $nf->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
         if ($decimals == 0) {
-            return preg_replace('/[,\.]00$/', '', $nf->formatCurrency(round($value), $currencyCode));
+            return preg_replace('/[,\.]00$/', '', $nf->formatCurrency(round((float)$value), $currencyCode));
         }
-        return $nf->formatCurrency($value, $currencyCode);
+        return $nf->formatCurrency((float)$value, $currencyCode);
     }
 
     /**
@@ -68,11 +68,11 @@ class Formatter
      * @param int $decimals
      * @return string
      */
-    public static function decimal(float $value, int $decimals = 2): string
+    public static function decimal(?float $value, int $decimals = 2): string
     {
         $nf = new NumberFormatter(Locale::getDefault(), NumberFormatter::DECIMAL);
         $nf->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
-        return $nf->format($value);
+        return $nf->format((float)$value);
     }
 
 
@@ -97,8 +97,9 @@ class Formatter
      * @param string $suffix
      * @return string
      */
-    public static function readableNumber(float $value, int $decimals = 2, string $maxIndex = 'B', string $suffix = ''): string
+    public static function readableNumber(?float $value, int $decimals = 2, string $maxIndex = 'B', string $suffix = ''): string
     {
+        $value = (float)$value;
         $readable = array("", "k", "M", "B");
         $index = 0;
         while($value > 1000){

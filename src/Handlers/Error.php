@@ -46,15 +46,6 @@ final class Error extends \Slim\Handlers\ErrorHandler
             ]);
         }
 
-        if (!$displayErrorDetails) {
-            $errorMsg = $errorCode === 422 ? "Validation error" : "Ops. An error occurred";
-            if ($errorCode !== 422) {
-                $messages = [];
-            }
-
-            return app()->error($errorCode, $errorMsg, $messages);
-        }
-
         if ($app->isConsole()) {
             if ($app->has('slashtrace')) {
                 $slashtrace = $app->resolve('slashtrace');
@@ -64,6 +55,15 @@ final class Error extends \Slim\Handlers\ErrorHandler
             }
 
             return $app->error($errorCode, $errorMsg, $messages);
+        }
+
+        if (!$displayErrorDetails) {
+            $errorMsg = $errorCode === 422 ? "Validation error" : "Ops. An error occurred";
+            if ($errorCode !== 422) {
+                $messages = [];
+            }
+
+            return app()->error($errorCode, $errorMsg, $messages);
         }
 
         if ($app->has('slashtrace')) {

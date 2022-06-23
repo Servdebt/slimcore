@@ -8,7 +8,7 @@ use DirectoryIterator;
 class Help extends Command
 {
 
-	public function show($command = '')
+	public function show(string $command = '') :string
     {
         $ret  = PHP_EOL. "usage: php ".ROOT_PATH."cli.php <command-name> <method-name> [parameters...]" . PHP_EOL . PHP_EOL;
         $ret .= "The following ". (empty($command) ? "commands" : "tasks") ." are available:" . PHP_EOL;
@@ -46,7 +46,7 @@ class Help extends Command
      * @return string
      * @throws \ReflectionException
      */
-    private function listClassMethods(string $filename, string $namespace = "\\App\\Console\\")
+    private function listClassMethods(string $filename, string $namespace = "\\App\\Console\\") :string
     {
         $ret = "";
         $className = str_replace(".php", "", $filename);
@@ -56,7 +56,7 @@ class Help extends Command
             $ret .= "- " . $className . PHP_EOL;
 
             foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                if (strpos($method->getName(), '__') === 0) {
+                if (str_starts_with($method->getName(), '__')) {
                     continue;
                 }
                 $ret .= "       ".$method->getName()." ";

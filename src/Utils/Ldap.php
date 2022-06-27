@@ -54,7 +54,7 @@ class Ldap
 
     public function belongsToOu($elem, string $ou) :bool
     {
-        return str_contains($elem['distinguishedname'][0]  ?? '', "OU={$ou}");
+        return isset($elem['distinguishedname'][0]) && str_contains($elem['distinguishedname'][0], "OU={$ou}");
     }
 
 }

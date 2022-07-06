@@ -8,24 +8,19 @@ use Traversable;
 
 class Redis
 {
-    /** @var Client */
-    public $client;
+    public Client $client;
 
 
-    /**
-     * Redis constructor.
-     *
-     * @param ClientInterface $client A Predis Client.
-     */
     public function __construct(ClientInterface $client)
     {
         $this->client = $client;
     }
 
 
-    public function get(string $key, $default = null)
+    public function get(string $key, $default = null, bool $uncompressData = true): mixed
     {
-        $item = $this->uncompress($this->client->get($this->canonicalize($key)));
+        $item = $this->client->get($this->canonicalize($key));
+        $item = $uncompressData ? $this->uncompress($item) : $item;
 
         if (!empty($item)) {
             return $item;
@@ -35,9 +30,9 @@ class Redis
     }
 
 
-    public function set(string $key, $value, $ttl = null)
+    public function set(string $key, $value, $ttl = null, bool $compressData = true): bool
     {
-        $value = $this->compress($value);
+        $value = $compressData ? $this->compress($value) : $value;
         $key = $this->canonicalize($key);
 
         if ($ttl === null) {
@@ -56,13 +51,13 @@ class Redis
     }
 
 
-    public function delete(string $key)
+    public function delete(string $key): bool
     {
         return $this->client->del($this->canonicalize($key)) == 1;
     }
 
 
-    public function clear()
+    public function clear(): bool
     {
         $this->client->flushdb();
 
@@ -70,22 +65,23 @@ class Redis
     }
 
 
-    public function getMultiple($keys, $default = null)
+    public function getMultiple($keys, $default = null, bool $uncompressData = true): array
     {
         if (!is_array($keys) && !$keys instanceof Traversable) {
             throw new \Exception("Keys must be an array or a \\Traversable instance.");
         }
 
-        $result = array();
+        $result = [];
         foreach ($keys as $key) {
-            $result[$key] = $this->uncompress($this->get($key, $default));
+            $val = $this->get($key, $default);
+            $result[$key] = $uncompressData ? $this->uncompress($val) : $val;
         }
 
         return $result;
     }
 
 
-    public function setMultiple($values, $ttl = null)
+    public function setMultiple($values, $ttl = null, bool $compressData = true): bool
     {
         if (!is_array($values) && !$values instanceof Traversable) {
             throw new \Exception("Values must be an array or a \\Traversable instance.");
@@ -93,12 +89,14 @@ class Redis
 
         try {
             $redis = $this;
-            $responses = $this->client->transaction(function ($tx) use ($values, $ttl, $redis) {
+            $responses = $this->client->transaction(function ($tx) use ($values, $ttl, $redis, $compressData) {
                 foreach ($values as $key => $value) {
-                    if (!$redis->set($key, $this->compress($value), $ttl)) {
+                    $val = $compressData ? $this->compress($value) : $value;
+                    if (!$redis->set($key, $val, $ttl)) {
                         throw new \Exception();
                     }
                 }});
+
         } catch (\Exception $e) {
             return false;
         }
@@ -107,7 +105,7 @@ class Redis
     }
 
 
-    public function deleteMultiple($keys)
+    public function deleteMultiple($keys): bool
     {
         if (!is_array($keys) && !$keys instanceof Traversable) {
             throw new \Exception("Keys must be an array or a \\Traversable instance.");
@@ -129,7 +127,7 @@ class Redis
     }
 
 
-    public function has($key)
+    public function has($key): bool
     {
         if (!is_string($key)) {
             throw new \Exception("Provided key is not a legal string.");
@@ -140,38 +138,27 @@ class Redis
 
     /* Queues */
 
-    public function enqueue($queue, $values)
+    public function enqueue($queue, $values, bool $compressData = true): int
     {
         if (!is_array($values)) $values = [$values];
 
-        if (app()->env == App::DEVELOPMENT) {
-
-            foreach ($values as $val) {
-                // dispatch to processor
-                $obj = new $val['class'];
-                $obj->{$val['method']}((object)$val['payload']);
-            }
-
-            return count($values);
-        }
-
         for ($i=0; $i<count($values); ++$i) {
-            $values[$i] = $this->compress($values[$i]);
+            $values[$i] = $compressData ? $this->compress($values[$i]) : $values[$i];
         }
 
         return $this->client->rpush($this->canonicalize($queue), $values);
     }
 
 
-    public function dequeue($queue)
+    public function dequeue($queue, bool $uncompressData = true): mixed
     {
         $var = $this->client->lpop($this->canonicalize($queue));
 
-        return $this->uncompress($var[1]);
+        return $uncompressData ? $this->uncompress($var[1]) : $var[1];
     }
 
 
-    public function dequeueWait($queue, $timeout = 30)
+    public function dequeueWait($queue, $timeout = 30, bool $uncompressData = true): mixed
     {
         $var = null;
 
@@ -182,7 +169,7 @@ class Redis
             $this->client->ping();
         }
 
-        return $this->uncompress($var[1]);
+        return $uncompressData ? $this->uncompress($var[1]) : $var[1];
     }
 
 
@@ -194,7 +181,7 @@ class Redis
      * @param string $channel
      * @param mixed $message
      */
-    public function publish($channel, $message)
+    public function publish(mixed $channel, mixed $message): int
     {
         $message = $this->compress($message);
 
@@ -208,7 +195,7 @@ class Redis
      * @param string $channel
      * @param callable $handler
      */
-    public function subscribe($channel, callable $handler)
+    public function subscribe(mixed $channel, callable $handler)
     {
         $loop = $this->client->pubSubLoop();
 
@@ -225,7 +212,7 @@ class Redis
     }
 
 
-    public function testRateLimit($key, $window, $limit)
+    public function testRateLimit(string $key, int $window, int $limit): mixed
     {
         $script = <<<'LUA'
 local token = KEYS[1]
@@ -251,11 +238,7 @@ LUA;
     /* Utils */
 
 
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    private function compress($value)
+    private function compress($value): string|false
     {
         $value = serialize($value);
 
@@ -263,11 +246,7 @@ LUA;
     }
 
 
-    /**
-     * @param mixed $value
-     * @return mixed
-     */
-    private function uncompress($value)
+    private function uncompress($value): mixed
     {
         $value = strlen($value) == 0 ? $value : gzuncompress($value);
 
@@ -275,16 +254,7 @@ LUA;
     }
 
 
-    /**
-     * Canonicalizes a string.
-     *
-     * In practice, it replaces whitespaces for underscores, as PSR-16 defines we must allow
-     * any valid PHP string, and Redis won't allow key names with whitespaces.
-     *
-     * @param string $string String to be canonicalized
-     * @return string Canonical string
-     */
-    private function canonicalize(string $string)
+    private function canonicalize(string $string): string
     {
         return str_replace(' ', '_', $string);
     }

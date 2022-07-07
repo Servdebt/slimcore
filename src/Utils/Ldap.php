@@ -59,6 +59,16 @@ class Ldap
 
     public function getEntries(string $baseDn, array $filter, array $attributes=[]) :?array
     {
-        return $this->ldapConn->query()->setDn($baseDn)->select($attributes)->rawFilter($filter)->get();
+        return $this->ldapConn->query()->setDn($baseDn)
+            ->select($attributes)
+            ->rawFilter($filter)
+            ->get();
+    }
+
+    public function getUserByDn(string $baseDn, string $username) :?array
+    {
+        return $this->ldapConn->query()->setDn($baseDn)
+            ->where('samaccountname', '=',$username)
+            ->first();
     }
 }

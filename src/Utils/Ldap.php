@@ -57,7 +57,7 @@ class Ldap
         return isset($elem['distinguishedname'][0]) && str_contains($elem['distinguishedname'][0], "OU={$ou}");
     }
 
-    public function getEntries(string $baseDn, array $filter, array $attributes=[]) :?array
+    public function getEntries(string $baseDn, string $filter, array $attributes=[]) :?array
     {
         return $this->ldapConn->query()->setDn($baseDn)
             ->select($attributes)

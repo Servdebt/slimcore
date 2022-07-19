@@ -44,7 +44,7 @@ class NosRESTGateway
             ],
         ];
 
-        $response = @file_get_contents($url, false, stream_context_create($arrContextOptions));
+        $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
 
         if ($response === false) {
             $this->error = "SMS send failed: got empty response";

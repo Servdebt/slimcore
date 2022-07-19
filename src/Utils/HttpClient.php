@@ -15,7 +15,8 @@ class HttpClient
     const OPTIONS = 'OPTIONS';
 
 
-    public static function request($method, $url, $urlParams = [], $headers = [], $options = [], $data = [])
+    public static function request(string $method, string $url, object|array $urlParams = [],
+                                   array $headers = [], array $options = [], mixed $data = [])
     {
         if (!empty($urlParams)) {
             $url .= '?'.http_build_query($urlParams);
@@ -25,20 +26,15 @@ class HttpClient
             $options = ['timeout' => 10, "connect_timeout"  => 10, 'verify' => false];
         }
 
-        try {
-            $response = null;
-            $response = match ($method) {
-                self::GET => Requests::get($url, $headers, $options),
-                self::PUT => Requests::put($url, $headers, $data, $options),
-                self::POST => Requests::post($url, $headers, $data, $options),
-                self::PATCH => Requests::patch($url, $headers, $data, $options),
-                self::DELETE => Requests::delete($url, $headers, $options),
-                self::HEAD => Requests::head($url, $headers, $options),
-                self::OPTIONS => Requests::options($url, $headers, $data, $options),
-            };
-        } catch (Requests_Exception $e) {
-            $response = null;
-        }
+        $response = match ($method) {
+            self::GET => Requests::get($url, $headers, $options),
+            self::PUT => Requests::put($url, $headers, $data, $options),
+            self::POST => Requests::post($url, $headers, $data, $options),
+            self::PATCH => Requests::patch($url, $headers, $data, $options),
+            self::DELETE => Requests::delete($url, $headers, $options),
+            self::HEAD => Requests::head($url, $headers, $options),
+            self::OPTIONS => Requests::options($url, $headers, $data, $options),
+        };
 
         return (object)[
             'code' => $response !== null ? $response->status_code : 404,

@@ -185,7 +185,7 @@ class Redis
     {
         $message = $this->compress($message);
 
-        $this->client->publish($this->canonicalize($channel), $message);
+        return $this->client->publish($this->canonicalize($channel), $message);
     }
 
 
@@ -195,7 +195,7 @@ class Redis
      * @param string $channel
      * @param callable $handler
      */
-    public function subscribe(mixed $channel, callable $handler)
+    public function subscribe(mixed $channel, callable $handler): void
     {
         $loop = $this->client->pubSubLoop();
 

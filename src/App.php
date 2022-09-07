@@ -82,9 +82,9 @@ class App
             $routeCollector->setCacheFile($this->configs['routerCacheFile']);
         }
 
-        $this->addRoutingMiddleware();
-        $this->registerMiddleware();
         $this->registerProviders();
+        $this->registerMiddleware();
+        $this->addRoutingMiddleware();
         $this->registerErrorHandlers();
 
         $this->slim->run($this->request);
@@ -94,7 +94,7 @@ class App
     {
         $services = (array)$this->getConfig('services');
         foreach ($services as $serviceName => $service) {
-            if (!isset($service['on']) || strpos($service['on'], $this->appName) !== false) {
+            if (!isset($service['on']) || str_contains($service['on'], $this->appName)) {
                 $service['provider']::register($this, $serviceName, $service['settings'] ?? []);
             }
         }
@@ -104,7 +104,7 @@ class App
     {
         $middlewares = array_reverse((array)$this->getConfig('middleware'));
         array_walk($middlewares, function($appName, $middleware) {
-            if (strpos($appName, $this->appName) !== false) {
+            if (str_contains($appName, $this->appName)) {
                 $this->slim->add(new $middleware);
             }
         });
@@ -234,7 +234,7 @@ class App
         return php_sapi_name() === 'cli';
     }
 
-    public function isEnvironment(string $environment)
+    public function isEnvironment(string $environment): bool
     {
         return strtolower($this->env) === strtolower($environment);
     }
@@ -314,7 +314,7 @@ class App
      *
      * @throws \ReflectionException
      */
-    public function sendResponse($resp): Response
+    public function sendResponse(mixed $resp): Response
     {
         if ($resp instanceof Response) {
             return $resp;
@@ -373,11 +373,9 @@ class App
             throw new \Exception('No default error handler defined. Please configure it in application configurations.');
         }
 
-        $response = is_callable($this->configs['errorHandler'])
+        return is_callable($this->configs['errorHandler'])
             ? call_user_func($this->configs['errorHandler'], $status, $error, $messages)
             : (new $this->configs['errorHandler'])($status, $error, $messages);
-
-        return $response;
     }
 
     // Container //
@@ -391,7 +389,7 @@ class App
      * @return mixed
      * @throws \ReflectionException
      */
-    public function resolve($name, $params = [])
+    public function resolve(string $name, array $params = []): mixed
     {
         $dependency = $this->getContainer()->get($name);
 
@@ -404,8 +402,9 @@ class App
      * @param \ReflectionMethod $method
      * @param array $urlParams
      * @return array
+     * @throws \ReflectionException
      */
-    private function resolveMethodDependencies(\ReflectionMethod $method, $urlParams = [])
+    private function resolveMethodDependencies(\ReflectionMethod $method, array $urlParams = []): array
     {
         return array_map(function($dependency) use ($urlParams) {
             return $this->resolveDependency($dependency, $urlParams);
@@ -421,7 +420,7 @@ class App
      *
      * @throws \ReflectionException
      */
-    private function resolveDependency(\ReflectionParameter $param, $urlParams = [])
+    private function resolveDependency(\ReflectionParameter $param, array $urlParams = [])
     {
         // for controller method para injection from $_GET
         if (count($urlParams) && array_key_exists($param->name, $urlParams)) {

@@ -15,7 +15,9 @@ use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
+use Slim\Psr7\Environment;
 use Slim\Psr7\Factory\ResponseFactory;
+use Slim\Psr7\Uri;
 
 class App
 {
@@ -35,8 +37,6 @@ class App
 
     protected function __construct(ContainerInterface $container = null)
     {
-        $this->appName = $this->isConsole() ? 'console' : 'http';
-
         if (!$container) {
             $container = (new Container())
                 ->withAutoWiring()
@@ -49,7 +49,20 @@ class App
         AppFactory::setContainer($container);
         $this->slim = AppFactory::create();
 
-        $this->registerInContainer(Request::class, (ServerRequestCreatorFactory::create())->createServerRequestFromGlobals());
+        if ($this->isConsole()) {
+            $data = Environment::mock([
+                'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'],
+                'REQUEST_URI' => '/command',
+                "HTTP_HOST" => '',
+            ]);
+
+            $uri = new Uri($data["REQUEST_SCHEME"], $data["HTTP_HOST"], $data["SERVER_PORT"], $data["REQUEST_URI"]);
+            $request = ((ServerRequestCreatorFactory::create())->createServerRequestFromGlobals())->withUri($uri);
+        } else {
+            $request = (ServerRequestCreatorFactory::create())->createServerRequestFromGlobals();
+        }
+
+        $this->registerInContainer(Request::class, $request);
         $this->registerInContainer(Response::class, (new ResponseFactory)->createResponse());
     }
 
@@ -84,7 +97,7 @@ class App
 
         $this->registerProviders();
         $this->registerMiddleware();
-        $this->addRoutingMiddleware();
+        $this->slim->addRoutingMiddleware();
         $this->registerErrorHandlers();
 
         $this->slim->run($this->request);
@@ -92,9 +105,10 @@ class App
 
     private function registerProviders(): void
     {
+        $scope = $this->isConsole() ? 'console' : 'http';
         $services = (array)$this->getConfig('services');
         foreach ($services as $serviceName => $service) {
-            if (!isset($service['on']) || str_contains($service['on'], $this->appName)) {
+            if (!isset($service['on']) || str_contains($service['on'], $scope)) {
                 $service['provider']::register($this, $serviceName, $service['settings'] ?? []);
             }
         }
@@ -102,9 +116,10 @@ class App
 
     private function registerMiddleware(): void
     {
+        $scope = $this->isConsole() ? 'console' : 'http';
         $middlewares = array_reverse((array)$this->getConfig('middleware'));
-        array_walk($middlewares, function($appName, $middleware) {
-            if (str_contains($appName, $this->appName)) {
+        array_walk($middlewares, function($appName, $middleware) use($scope) {
+            if (str_contains($appName, $scope)) {
                 $this->slim->add(new $middleware);
             }
         });

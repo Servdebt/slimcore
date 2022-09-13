@@ -107,7 +107,7 @@ class Session
     /**
      * Destroy current session and delete session cookie
      *
-     * @return void
+     * @return bool
      */
     public static function destroy(): bool
     {

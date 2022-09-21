@@ -13,6 +13,7 @@ use Servdebt\SlimCore\Handlers\Error;
 use Servdebt\SlimCore\Utils\DotNotation;
 use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
+use Slim\Middleware\MethodOverrideMiddleware;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
 use Slim\Psr7\Environment;
@@ -21,8 +22,6 @@ use Slim\Psr7\Uri;
 
 class App
 {
-    public string $appName;
-
     const DEVELOPMENT = 'development';
     const STAGING = 'staging';
     const PRODUCTION = 'production';
@@ -96,8 +95,11 @@ class App
         }
 
         $this->registerProviders();
+
         $this->registerMiddleware();
         $this->slim->addRoutingMiddleware();
+        $this->slim->add(new MethodOverrideMiddleware());
+
         $this->registerErrorHandlers();
 
         $this->slim->run($this->request);
@@ -118,6 +120,7 @@ class App
     {
         $scope = $this->isConsole() ? 'console' : 'http';
         $middlewares = array_reverse((array)$this->getConfig('middleware'));
+
         array_walk($middlewares, function($appName, $middleware) use($scope) {
             if (str_contains($appName, $scope)) {
                 $this->slim->add(new $middleware);

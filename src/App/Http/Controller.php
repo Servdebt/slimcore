@@ -31,6 +31,18 @@ class Controller
     }
 
 
+    public function isAjax()
+    {
+        return strtolower($this->request->getHeaderLine('X-Requested-With')) == strtolower('XMLHttpRequest');
+    }
+
+
+    public function isPost()
+    {
+        return strtolower($this->request->getMethod()) == 'post';
+    }
+
+
     public function getPostParam($paramName, $defaultValue = null): mixed
     {
         return $this->postParams->get($paramName, $defaultValue);

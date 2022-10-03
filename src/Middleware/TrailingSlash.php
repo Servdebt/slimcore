@@ -14,7 +14,7 @@ class TrailingSlash extends Middleware
         $uri = $request->getUri();
         $path = $uri->getPath();
 
-        if ($path !== '/' && substr($path, -1) === '/') {
+        if ($path !== '/' && str_ends_with($path, '/')) {
 
             // recursively remove slashes when its more than 1 slash
             $path = rtrim($path, '/');
@@ -23,12 +23,13 @@ class TrailingSlash extends Middleware
             // to their non-trailing counterpart
             $uri = $uri->withPath($path);
 
+            /*
             if ($request->getMethod() === 'GET') {
                 $response = new Response();
                 return $response
                     ->withHeader('Location', (string)$uri)
                     ->withStatus(301);
-            }
+            }*/
 
             $request = $request->withUri($uri);
         }

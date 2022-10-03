@@ -148,7 +148,7 @@ class QueryBuilder extends Builder
         }
 
         if (isset($conditions['order'])) {
-            $qb->orderByRaw($conditions['where']);
+            $qb->orderByRaw($conditions['order']);
         }
 
         $res = $qb->pluck($columns[1] ?? $columns[0], $columns[0])->toArray();

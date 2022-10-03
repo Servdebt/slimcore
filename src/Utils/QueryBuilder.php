@@ -137,7 +137,7 @@ class QueryBuilder extends Builder
      */
     public static function getData(string $table, array $columns, array $conditions = []): array
     {
-        $qb = (new self())->from($table)->select($columns);
+        $qb = (new self())->from($table)->selectRaw(implode(',',$columns));
 
         if (isset($conditions['join'])) {
             $qb->join($conditions['join'][0], $conditions['join'][1]);

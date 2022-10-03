@@ -10,6 +10,7 @@ use Servdebt\SlimCore\Handlers\NotFound;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Servdebt\SlimCore\Handlers\Error;
+use Servdebt\SlimCore\Middleware\TrailingSlash;
 use Servdebt\SlimCore\Utils\DotNotation;
 use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
@@ -99,6 +100,7 @@ class App
         $this->registerMiddleware();
         $this->slim->addRoutingMiddleware();
         $this->slim->add(new MethodOverrideMiddleware());
+        $this->slim->add(new TrailingSlash());
 
         $this->registerErrorHandlers();
 

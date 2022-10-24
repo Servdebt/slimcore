@@ -140,7 +140,7 @@ class QueryBuilder extends Builder
         $qb = (new self())->from($table)->selectRaw(implode(',',$columns));
 
         if (isset($conditions['join'])) {
-            $qb->join($conditions['join'][0], $conditions['join'][1]);
+            $qb->join($conditions['join']['table'], $conditions['join']['first'],$conditions['join']['operator'],$conditions['join']['second'],$conditions['join']['type']);
         }
 
         if (isset($conditions['where'])) {

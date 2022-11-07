@@ -9,6 +9,8 @@ use Illuminate\Database\Query\Processors\Processor;
 class QueryBuilder extends Builder
 {
 
+    public array $lazyLoads = [];
+
     public function __construct(ConnectionInterface $connection = null, Grammar $grammar = null, Processor $processor = null)
     {
         /** ConnectionInterface $connection */
@@ -18,75 +20,75 @@ class QueryBuilder extends Builder
     }
 
 
-	public function compareString($column, $value, string $conditionType = 'and'): self
+    public function compareString($column, $value, string $conditionType = 'and'): self
     {
-		if (!empty($value)) {
-			$this->where($column, "like", "%{$value}%", strtolower($conditionType));
-		}
+        if (!empty($value)) {
+            $this->where($column, "like", "%{$value}%", strtolower($conditionType));
+        }
 
-		return $this;
-	}
+        return $this;
+    }
 
 
-	public function compareBoolean($column, $value, string $conditionType = 'and'): self
+    public function compareBoolean($column, $value, string $conditionType = 'and'): self
     {
-		if ($value !== "") {
-			$this->where($column, "=", (int)$value, strtolower($conditionType));
-		}
+        if ($value !== "") {
+            $this->where($column, "=", (int)$value, strtolower($conditionType));
+        }
 
-		return $this;
-	}
+        return $this;
+    }
 
 
-	public function compareNumeric($column, $value, string $conditionType = 'and'): self
+    public function compareNumeric($column, $value, string $conditionType = 'and'): self
     {
-		$operator = $this->extractOperator($value);
+        $operator = $this->extractOperator($value);
 
-		$value = str_replace([' ', '€', '$', '%'], '', $value);
-		$value = str_replace(',', '.', $value);
-		$value = preg_replace('/\.(?=.*\.)/', '', $value);
+        $value = str_replace([' ', '€', '$', '%'], '', $value);
+        $value = str_replace(',', '.', $value);
+        $value = preg_replace('/\.(?=.*\.)/', '', $value);
 
-		if (is_numeric($value)) {
-			$this->where($column, $operator, $value, strtolower($conditionType));
-		}
+        if (is_numeric($value)) {
+            $this->where($column, $operator, $value, strtolower($conditionType));
+        }
 
-		return $this;
-	}
+        return $this;
+    }
 
 
-	public function compareDate($column, $startDate = null, $endDate = null, string $conditionType = 'and'): self
+    public function compareDate($column, $startDate = null, $endDate = null, string $conditionType = 'and'): self
     {
-		if (isset($startDate) && strlen($startDate) > 0) {
+        if (isset($startDate) && strlen($startDate) > 0) {
 
-			$operator = $this->extractOperator($startDate);
+            $operator = $this->extractOperator($startDate);
 
-			$endDate = $endDate !== null && strlen($endDate) > 0 ? $endDate : $startDate;
+            $endDate = $endDate !== null && strlen($endDate) > 0 ? $endDate : $startDate;
 
-			$datetimeFormatIni = '0000-01-01 00:00:00';
-			if (strlen($endDate) < 10) {
-				$datetimeFormatEnd = date("Y-".(strlen($endDate) < 7 ? "12" : "m")."-t 23:59:59", strtotime($endDate));
-			}
-			else {
-				$datetimeFormatEnd = '0000-12-31 23:59:59';
-			}
+            $datetimeFormatIni = '0000-01-01 00:00:00';
+            if (strlen($endDate) < 10) {
+                $datetimeFormatEnd = date("Y-".(strlen($endDate) < 7 ? "12" : "m")."-t 23:59:59", strtotime($endDate));
+            }
+            else {
+                $datetimeFormatEnd = '0000-12-31 23:59:59';
+            }
 
-			$startDate = \DateTime::createFromFormat('Y-m-d H:i:s', $startDate.substr($datetimeFormatIni, strlen($startDate), strlen($datetimeFormatIni)));
-			$endDate = \DateTime::createFromFormat('Y-m-d H:i:s', $endDate.substr($datetimeFormatEnd, strlen($endDate), strlen($datetimeFormatEnd)));
+            $startDate = \DateTime::createFromFormat('Y-m-d H:i:s', $startDate.substr($datetimeFormatIni, strlen($startDate), strlen($datetimeFormatIni)));
+            $endDate = \DateTime::createFromFormat('Y-m-d H:i:s', $endDate.substr($datetimeFormatEnd, strlen($endDate), strlen($datetimeFormatEnd)));
 
-			if ($operator != "=") {
-				$this->where($column, $operator, $startDate->format('Y-m-d H:i:s'), strtolower($conditionType));
-			}
+            if ($operator != "=") {
+                $this->where($column, $operator, $startDate->format('Y-m-d H:i:s'), strtolower($conditionType));
+            }
 
-			if ($startDate !== false && $endDate !== false) {
-				$this->whereBetween($column, [
-					$startDate->format('Y-m-d H:i:s'),
-					$endDate->format('Y-m-d H:i:s')
-				], strtolower($conditionType));
-			}
-		}
+            if ($startDate !== false && $endDate !== false) {
+                $this->whereBetween($column, [
+                    $startDate->format('Y-m-d H:i:s'),
+                    $endDate->format('Y-m-d H:i:s')
+                ], strtolower($conditionType));
+            }
+        }
 
-		return $this;
-	}
+        return $this;
+    }
 
 
     public function addConditionIfValue($condition, $value = null, array $params = [], string $conditionType = 'and'): self
@@ -94,27 +96,66 @@ class QueryBuilder extends Builder
         if (isset($value) && !empty($value)) {
             $this->whereRaw($condition, $params, strtolower($conditionType));
         }
+
         return $this;
     }
 
 
-	public function datatablesGetData(array $params): array
+    public function lazyLoad(string $relationName, string $key, string $query): self
+    {
+        $this->lazyLoads[$relationName] = ['key' => $key, 'query' => $query];
+
+        return $this;
+    }
+
+
+    public function execLazyLoads(array $data): array
+    {
+        if (empty($data) || empty($this->lazyLoads)) {
+            return $data;
+        }
+
+        foreach ($this->lazyLoads as $relationName => $ll) {
+            $query = $ll['query'];
+            preg_match_all('/\{\{(.*?)\}\}/s', $query, $matches);
+
+            // replace query placeholders
+            foreach ($matches[1] as $match) {
+                $ids = array_unique(array_column($data, $match));
+                $query = str_replace('{{'.$match.'}}', "(".implode(',', $ids).")", $query);
+            }
+
+            $res = $this->connection->select($query);
+            foreach ($data as &$dataLine) {
+                $dataLine->{$relationName} = array_values(array_filter($res, function ($elem) use($dataLine, $ll) {
+                    return $elem->{$ll['key']} == $dataLine->{$ll['key']};
+                }));
+            }
+        }
+
+        return array_values($data);
+    }
+
+
+    public function datatablesGetData(array $params): array
     {
         $this->offset($params['start'])
             ->limit($params['length']);
 
-		foreach ($params['order'] ?? [] as $order) {
+        foreach ($params['order'] ?? [] as $order) {
 
-			$orderField = $params['columns'][$order['column']]['data'];
-			$orderDirection = $order['dir'];
+            $orderField = $params['columns'][$order['column']]['data'];
+            $orderDirection = $order['dir'];
 
-			if (!empty($orderField)) {
-				$this->orderBy($orderField, $orderDirection);
-			}
-		}
+            if (!empty($orderField)) {
+                $this->orderBy($orderField, $orderDirection);
+            }
+        }
 
-		return $this->get()->toArray();
-	}
+        $data = $this->get()->toArray();
+
+        return $this->execLazyLoads($data);
+    }
 
 
     /**
@@ -122,10 +163,10 @@ class QueryBuilder extends Builder
      * @param null $keyField
      * @return array
      */
-	public function columnsToArray($valueField, $keyField = null): array
+    public function columnsToArray($valueField, $keyField = null): array
     {
-		return array_column($this->toArray(), $valueField, $keyField);
-	}
+        return array_column($this->toArray(), $valueField, $keyField);
+    }
 
 
     /**
@@ -137,7 +178,7 @@ class QueryBuilder extends Builder
      */
     public static function getData(string $table, array $columns, array $conditions = []): array
     {
-        $qb = (new self())->from($table)->select($columns);
+        $qb = (new self())->from($table)->selectRaw(implode(',',$columns));
 
         if (isset($conditions['join'])) {
             $qb->join($conditions['join'][0], $conditions['join'][1]);
@@ -148,7 +189,7 @@ class QueryBuilder extends Builder
         }
 
         if (isset($conditions['order'])) {
-            $qb->orderByRaw($conditions['where']);
+            $qb->orderByRaw($conditions['order']);
         }
 
         $res = $qb->pluck($columns[1] ?? $columns[0], $columns[0])->toArray();

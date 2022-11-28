@@ -72,9 +72,9 @@ class Ldap
             ->first();
     }
 
-    public function getUserByCn(string $cname) :?array
+    public function getUserByCn(string $baseDn,string $cname) :?array
     {
-        return $this->ldapConn->query()
+        return $this->ldapConn->query()->setDn($baseDn)
             ->where('cn', '=',$cname)
             ->first();
     }

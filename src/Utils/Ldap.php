@@ -71,4 +71,11 @@ class Ldap
             ->where('samaccountname', '=',$username)
             ->first();
     }
+
+    public function getUserByCn(string $cname) :?array
+    {
+        return $this->ldapConn->query()
+            ->where('cn', '=',$cname)
+            ->first();
+    }
 }

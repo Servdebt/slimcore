@@ -113,4 +113,43 @@ class Formatter
         return self::decimal($value, $decimals)." ".$readable[$index] . $suffix;
     }
 
+	/**
+     * returns a string with date/time formatted accordingly to params or empty string if date is invalid
+	 * @param mixed $datetime format Y-m-d H:i:s
+	 * @param string $dateWidth width of the date pattern. It can be 'FULL', 'LONG', 'MEDIUM' and 'SHORT'.
+	 * If null, it means the date portion will NOT appear in the formatting result
+	 * @param string $timeWidth width of the time pattern. It can be 'FULL', 'LONG', 'MEDIUM' and 'SHORT'.
+	 * If null, it means the time portion will NOT appear in the formatting result
+	 * @return string
+     */
+	public static function dateTime($datetime, $dateWidth = 'MEDIUM', $timeWidth = null)
+	{
+		$outputStr = "";
+		$dateWidth = strtoupper($dateWidth);
+		$timeWidth = strtoupper($timeWidth);
+		try {
+			if( empty($datetime) ) throw new Exception("datetime param cannot be empty");
+			$outputFormat = "";
+
+			if( $dateWidth !== null ){
+				if( $dateWidth === 'FULL' )			$outputFormat = 'Y-m-d';
+				elseif( $dateWidth === 'LONG' )		$outputFormat = 'Y-m-d';
+				elseif( $dateWidth === 'MEDIUM' )	$outputFormat = 'Y-m-d';
+				elseif( $dateWidth === 'SHORT' )	$outputFormat = 'Y-m-d';
+			}
+			if( $timeWidth !== null ){
+				if(!empty($outputFormat))			$outputFormat .= ' ';
+
+				if( $timeWidth === 'FULL' )			$outputFormat .= 'H:i:s';
+				elseif( $timeWidth === 'LONG' )		$outputFormat .= 'H:i:s';
+				elseif( $timeWidth === 'MEDIUM' )	$outputFormat .= 'H:i:s';
+				elseif( $timeWidth === 'SHORT' )	$outputFormat .= 'H:i';
+			}
+
+			$dateObj = new DateTime($datetime);
+			$outputStr = $dateObj->format($outputFormat);
+		}
+		catch (Exception $e) { $outputStr = ''; }
+		return $outputStr;
+	}
 }

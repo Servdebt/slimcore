@@ -1,13 +1,64 @@
 <?php
 
 namespace Servdebt\SlimCore\Utils;
+use Cassandra\Date;
 use \DateTime;
 use \NumberFormatter;
 use \Locale;
+use \IntlDateFormatter;
 
 
 class Formatter
 {
+
+    public const FULL = 0;
+    public const LONG = 1;
+    public const MEDIUM = 2;
+    public const SHORT = 3;
+    public const NONE = -1;
+
+
+    /**
+     * @param DateTime|string $datetime
+     * @param int $dateType
+     * @param int $timeType
+     * @param string|null $locale
+     * @param mixed|null $timezone
+     * @return string
+     * @throws \Exception
+     */
+    public static function dateTime(DateTime|string $datetime = "now", int $dateType = 3, int $timeType = 3, ?string $locale = null, mixed $timezone = null): string
+    {
+        if (is_string($datetime)) {
+            $datetime = new DateTime($datetime);
+        }
+
+        return (new IntlDateFormatter(
+            $locale ?? Locale::getDefault(),
+            $dateType,
+            $timeType,
+            $timezone ?? date_default_timezone_get(),
+            IntlDateFormatter::GREGORIAN,
+        ))->format($datetime);
+    }
+
+
+    /**
+     * @param DateTime|string $datetime
+     * @param string $format
+     * @param mixed|null $timezone
+     * @return string
+     * @throws \Exception
+     */
+    public static function formatDate(DateTime|string $datetime = "now", string $format = 'Y-m-d H:i:s', mixed $timezone = null): string
+    {
+        if (is_string($datetime)) {
+            $datetime = new DateTime($datetime, new \DateTimeZone($timezone));
+        }
+
+        return $datetime->format($format);
+    }
+
 
     /**
      * @param DateTime $datetime
@@ -42,36 +93,53 @@ class Formatter
         }
 
         if (!$full) $string = array_slice($string, 0, 1);
+
         return $string ? implode(', ', $string) . ' ago' : 'just now';
     }
 
+
     /**
      * returns a string with currency formatted accordingly to locale settings
-     * @param float $value
+     * @param ?float $value
      * @param int $decimals
      * @param string $currencyCode
+     * @param string|null $locale
      * @return string
      */
-    public static function currency(?float $value, int $decimals = 2, string $currencyCode = 'EUR' ) :string
+    public static function currency(?float $value, int $decimals = 2, string $currencyCode = 'EUR', ?string $locale = null) :string
     {
-        $nf = new NumberFormatter(Locale::getDefault(), NumberFormatter::CURRENCY);
+        $nf = new NumberFormatter($locale ?? Locale::getDefault(), NumberFormatter::CURRENCY);
         $nf->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
         if ($decimals == 0) {
             return preg_replace('/[,\.]00$/', '', $nf->formatCurrency(round((float)$value), $currencyCode));
         }
+
         return $nf->formatCurrency((float)$value, $currencyCode);
     }
 
+
     /**
      * returns a string with decimal formatted accordingly to locale settings
-     * @param float $value
-     * @param int $decimals
-     * @return string
+     * @param ?float $value
+     * @param string|null $locale
      */
-    public static function decimal(?float $value, int $decimals = 2): string
+    public static function int(?float $value, ?string $locale = null): string
     {
-        $nf = new NumberFormatter(Locale::getDefault(), NumberFormatter::DECIMAL);
+        return self::decimal($value, 0, $locale);
+    }
+
+
+    /**
+     * returns a string with decimal formatted accordingly to locale settings
+     * @param ?float $value
+     * @param int $decimals
+     * @param string|null $locale
+     */
+    public static function decimal(?float $value, int $decimals = 2, ?string $locale = null): string
+    {
+        $nf = new NumberFormatter($locale ?? Locale::getDefault(), NumberFormatter::DECIMAL);
         $nf->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
+
         return $nf->format((float)$value);
     }
 
@@ -84,14 +152,15 @@ class Formatter
      */
     public static function readableFilesize(int $size, int $decimals = 2): string
     {
-        for($i = 0; ($size / 1024) > 0.9; $i++, $size /= 1024) {}
+        for ($i = 0; ($size / 1024) > 0.9; $i++, $size /= 1024) {}
+
         return round($size, $decimals).['B','kB','MB','GB','TB','PB','EB','ZB','YB'][$i];
     }
 
 
     /**
      * returns human readable number
-     * @param float $value
+     * @param ?float $value
      * @param int $decimals
      * @param string $maxIndex
      * @param string $suffix
@@ -102,7 +171,7 @@ class Formatter
         $value = (float)$value;
         $readable = array("", "k", "M", "B");
         $index = 0;
-        while($value > 1000){
+        while ($value > 1000) {
             $value /= 1000;
             $index++;
             if ($index == count($readable)-1 || $readable[$index] == $maxIndex) break;

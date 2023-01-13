@@ -27,7 +27,7 @@ class Formatter
      * @return string
      * @throws \Exception
      */
-    public static function dateTime(DateTime|string $datetime = "now", int $dateType = 3, int $timeType = 3, ?string $locale = null, mixed $timezone = null): string
+    public static function dateTime(DateTime|string $datetime = "now", int $dateType = 2, int $timeType = -1, ?string $locale = null, mixed $timezone = null): string
     {
         if (is_string($datetime)) {
             $datetime = new DateTime($datetime);
@@ -52,8 +52,13 @@ class Formatter
      */
     public static function formatDate(DateTime|string $datetime = "now", string $format = 'Y-m-d H:i:s', mixed $timezone = null): string
     {
+        $timezone = $timezone instanceof \DateTimeZone ? $timezone :
+            new \DateTimeZone($timezone ?? date_default_timezone_get());
+
         if (is_string($datetime)) {
-            $datetime = new DateTime($datetime, new \DateTimeZone($timezone));
+            $datetime = new DateTime($datetime, $timezone);
+        } elseif ($datetime instanceof DateTime) {
+            $datetime->setTimezone($timezone);
         }
 
         return $datetime->format($format);

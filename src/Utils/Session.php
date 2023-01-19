@@ -31,11 +31,11 @@ class Session
             setcookie(
                 session_name(),
                 session_id(),
-                $settings['lifetime'],
-                $settings['path'],
-                $settings['domain'],
-                $settings['secure'],
-                $settings['httponly']
+                $settings['lifetime'] ?? 0,
+                $settings['path'] ?? '',
+                $settings['domain'] ?? '',
+                $settings['secure'] ?? false,
+                $settings['httponly'] ?? false
             );
         }
     }

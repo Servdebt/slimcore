@@ -208,7 +208,7 @@ class QueryBuilder extends Builder
      */
     private function extractOperator(mixed &$string): string
     {
-        $string = trim($string);
+        $string = trim($string ?? '');
         $operator = '=';
         if (str_starts_with($string, '<')) $operator = '<';
         elseif (str_starts_with($string, '<=')) $operator = '<=';

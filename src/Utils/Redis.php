@@ -248,9 +248,9 @@ LUA;
 
     private function uncompress($value): mixed
     {
-        $value = strlen($value) == 0 ? $value : gzuncompress($value);
+        $value = strlen((string)$value) == 0 ? $value : gzuncompress($value);
 
-        return unserialize($value);
+        return unserialize((string)$value);
     }
 
 

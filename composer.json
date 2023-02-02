@@ -8,9 +8,10 @@
     },
     "require": {
         "php": ">=8.1",
+        "slim/psr7": "1.5.*",
         "slim/slim": "4.11.*",
-        "monolog/monolog": "3.2.*",
-        "vlucas/phpdotenv": "5.5.*"
+        "monolog/monolog": "2.7.*",
+        "vlucas/phpdotenv": "5.4.*"
     },
     "autoload": {
         "psr-4": {

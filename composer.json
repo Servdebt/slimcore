@@ -7,15 +7,10 @@
         "issues": "https://github.com/servdebt/slimcore/issues"
     },
     "require": {
-        "php": ">=8.0",
-        "psr/log": "1.1.*",
+        "php": ">=8.1",
         "slim/slim": "4.11.*",
-        "slim/psr7": "1.5.*",
-        "monolog/monolog": "2.7.*",
-        "vlucas/phpdotenv": "5.4.*"
-    },
-    "require-dev": {
-        "slashtrace/slashtrace": "1.1.*"
+        "monolog/monolog": "3.2.*",
+        "vlucas/phpdotenv": "5.5.*"
     },
     "autoload": {
         "psr-4": {

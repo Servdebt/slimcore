@@ -381,7 +381,7 @@ class App
             return $response;
         }
 
-        if ($this->resolve(Request::class)->getHeaderLine('Accept') === 'application/json') {
+        if (str_contains(strtolower($this->resolve(Request::class)->getHeaderLine('Accept')), 'application/json')) {
             $response = $response
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus($status);
@@ -395,14 +395,19 @@ class App
             return $response;
         }
 
-        // Use application default handler
-        if (!array_key_exists('errorHandler', $this->configs)) {
-            throw new \Exception('No default error handler defined. Please configure it in application configurations.');
-        }
+        $content = "
+        <html>
+            <body style='font-family: Arial'>
+                <h2 style='margin-top: 10px'>Oops an error occurred<br/></h2>
+                <b>{$error}</b><br/>
+                <p style='line-height: 24px; font-size: 13px'>". implode('<br/>', $messages)."</p>
+            </body>
+        </html>";
 
-        return is_callable($this->configs['errorHandler'])
-            ? call_user_func($this->configs['errorHandler'], $status, $error, $messages)
-            : (new $this->configs['errorHandler'])($status, $error, $messages);
+        $response = $response->withHeader('Content-type', 'text/html')->withStatus($status);
+        $response->getBody()->write($content);
+
+        return $response;
     }
 
     // Container //

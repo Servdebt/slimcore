@@ -37,6 +37,13 @@ class App
 
     protected function __construct(ContainerInterface $container = null)
     {
+        // error handler to catch warnings and notices
+        set_error_handler(function ($severity, $message, $file, $line) {
+            if (error_reporting() & $severity) {
+                throw new \ErrorException($message, 0, $severity, $file, $line);
+            }
+        });
+
         if (!$container) {
             $container = (new Container())
                 ->withAutoWiring()

@@ -33,7 +33,7 @@ final class Error extends \Slim\Handlers\ErrorHandler
         $messages = $errorCode === 422 ? $exception->getMessages() : array_slice(preg_split('/\r\n|\r|\n/', $exception->getTraceAsString()), 0, 10);
 
         // Log the message
-        if (isset($this->logger) && $logErrors) {
+        if ($this->logger !== null && $logErrors) {
             $this->logger->error($errorMsg, [
                 "trace"   => $messages,
                 "user"    => $userInfo,
@@ -46,34 +46,14 @@ final class Error extends \Slim\Handlers\ErrorHandler
             ]);
         }
 
-        if ($app->isConsole()) {
-            if ($app->has('slashtrace')) {
-                $slashtrace = $app->resolve('slashtrace');
-                $slashtrace->register();
-                $slashtrace->handleException($exception);
-                return $app->resolve('response')->withStatus($errorCode);
-            }
-
-            return $app->error($errorCode, $errorMsg, $messages);
-        }
-
-        if (!$displayErrorDetails) {
-            $errorMsg = $errorCode === 422 ? "Validation error" : "Ops. An error occurred";
+        if (!$displayErrorDetails && !$app->isConsole()) {
+            $errorMsg = $errorCode === 422 ? "Validation error" : $errorMsg;
             if ($errorCode !== 422) {
                 $messages = [];
             }
-
-            return app()->error($errorCode, $errorMsg, $messages);
         }
 
-        if ($app->has('slashtrace')) {
-            $slashtrace = $app->resolve('slashtrace');
-            $slashtrace->register();
-            $slashtrace->handleException($exception);
-            return $app->resolve('response')->withStatus($errorCode);
-        }
-
-        return parent::__invoke($request, $exception, $displayErrorDetails, false, false);
+        return app()->error($errorCode, $errorMsg, $messages);
     }
 
 }

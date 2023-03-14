@@ -5,6 +5,7 @@ use Exception;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
+use Monolog\LogRecord;
 
 /**
  * Telegram Handler For Monolog
@@ -53,10 +54,11 @@ class TelegramHandler extends AbstractProcessingHandler
      * @param array $record
      * @return void
      */
-    public function write(array $record): void
-    {        
-        $appName = array_key_exists('appName', $record['context']) ? $record['context']['appName'] : ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+    public function write(LogRecord $record): void
+    {
+        $record = $record->toArray();
 
+        $appName = array_key_exists('appName', $record['context']) ? $record['context']['appName'] : ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
         $message = $this->getEmoji($record['level']) .' '. $appName .' - '.$record['level_name'] .PHP_EOL .$record['message'];
         
         $ch = \curl_init();

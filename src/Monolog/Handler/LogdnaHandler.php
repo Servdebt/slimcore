@@ -11,6 +11,7 @@
 
 namespace Servdebt\SlimCore\Monolog\Handler;
 use Monolog\Formatter\FormatterInterface;
+use Monolog\LogRecord;
 
 /**
  * Sends log to Logdna. This handler uses logdna's ingestion api.
@@ -77,8 +78,10 @@ class LogdnaHandler extends \Monolog\Handler\AbstractProcessingHandler {
      * @param array $record
      * @return void
      */
-    protected function write(array $record): void 
+    protected function write(LogRecord $record): void
     {
+        $record = $record->toArray();
+        
         $headers = ['Content-Type: application/json'];
         $data = $record["formatted"];
         $appName = urlencode(array_key_exists('appName', $record['context']) ? $record['context']['appName'] : ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'));

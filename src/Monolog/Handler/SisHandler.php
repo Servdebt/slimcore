@@ -5,6 +5,7 @@ use Exception;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
+use Monolog\LogRecord;
 
 
 class SisHandler extends AbstractProcessingHandler
@@ -35,7 +36,7 @@ class SisHandler extends AbstractProcessingHandler
      * @param array $record
      * @return void
      */
-    public function write(array $record): void
+    public function write(LogRecord $record): void
     {
         $url = $this->host.'?appKey='. $this->appKey;
 
@@ -44,7 +45,7 @@ class SisHandler extends AbstractProcessingHandler
         $ch = \curl_init();
         \curl_setopt($ch, CURLOPT_URL, $url);
         \curl_setopt($ch, CURLOPT_POST, true);
-        \curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($record));
+        \curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($record->toArray()));
         \curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         \curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

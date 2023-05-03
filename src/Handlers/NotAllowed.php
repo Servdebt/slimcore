@@ -8,13 +8,6 @@ use Throwable;
 final class NotAllowed extends \Slim\Handlers\ErrorHandler
 {
 
-	/**
-	 * @param Request       $request
-	 * @param Response      $response
-	 *
-	 * @return ResponseInterface
-	 * @throws \ReflectionException
-	 */
     public function __invoke(
         Request $request,
         Throwable $exception,
@@ -30,7 +23,5 @@ final class NotAllowed extends \Slim\Handlers\ErrorHandler
 
         return app()->error(405, "Method ".$request->getMethod()." not allowed for uri ". $request->getUri()->getPath());
 	}
-
-
 
 }

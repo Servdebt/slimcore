@@ -4,17 +4,8 @@ namespace Servdebt\SlimCore\Monolog\Handler;
 use Exception;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
-use Monolog\Logger;
 use Monolog\LogRecord;
-
-/**
- * Telegram Handler For Monolog
- *
- * This class helps you in logging your application events
- * into telegram using it's API.
- *
- * @author Moein Rahimi <m.rahimi2150@gmail.com>
- */
+use Monolog\Logger;
 
 class TelegramHandler extends AbstractProcessingHandler
 {
@@ -38,7 +29,7 @@ class TelegramHandler extends AbstractProcessingHandler
      * @param int $level
      * @param bool $bubble
      */
-    public function __construct($token, $channel, $level = \Monolog\Logger::DEBUG, $bubble = true) 
+    public function __construct(string $token, string $channel, int $level = Logger::DEBUG, bool $bubble = true)
     {
         parent::__construct($level, $bubble);
 
@@ -50,10 +41,6 @@ class TelegramHandler extends AbstractProcessingHandler
     }
 
 
-    /**
-     * @param array $record
-     * @return void
-     */
     public function write(LogRecord $record): void
     {
         $record = $record->toArray();
@@ -79,17 +66,11 @@ class TelegramHandler extends AbstractProcessingHandler
 
         try {
             $result = \Monolog\Handler\Curl\Util::execute($ch, 1, false);
-            //debug($result, true);
         } catch (\Exception $e) {}
     }
 
 
-    /**
-     * make emoji for log events
-     * @return array
-     *
-     */
-    protected function emojiMap()
+    protected function emojiMap(): array
     {
         return [
             Logger::DEBUG     => '',
@@ -104,13 +85,7 @@ class TelegramHandler extends AbstractProcessingHandler
     }
 
 
-    /**
-     * return emoji for given level
-     *
-     * @param $level
-     * @return string
-     */
-    protected function getEmoji($level)
+    protected function getEmoji(int $level): string
     {
         $levelEmojiMap = $this->emojiMap();
         return $levelEmojiMap[$level];

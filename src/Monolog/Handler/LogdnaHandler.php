@@ -1,17 +1,9 @@
 <?php
 
-/*
- * This file is part of the Zwijn/Monolog package.
- *
- * (c) Nicolas Vanheuverzwijn <nicolas.vanheu@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace Servdebt\SlimCore\Monolog\Handler;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\LogRecord;
+use Monolog\Logger;
 
 /**
  * Sends log to Logdna. This handler uses logdna's ingestion api.
@@ -63,7 +55,7 @@ class LogdnaHandler extends \Monolog\Handler\AbstractProcessingHandler {
      * @param int $level
      * @param bool $bubble
      */
-    public function __construct($ingestion_key, $hostname, $level = \Monolog\Logger::DEBUG, $bubble = true) 
+    public function __construct(string $ingestion_key, string $hostname, int $level = Logger::DEBUG, bool $bubble = true)
     {
         parent::__construct($level, $bubble);
 
@@ -74,14 +66,11 @@ class LogdnaHandler extends \Monolog\Handler\AbstractProcessingHandler {
         $this->ingestion_key = $ingestion_key;
     }
 
-    /**
-     * @param array $record
-     * @return void
-     */
+
     protected function write(LogRecord $record): void
     {
         $record = $record->toArray();
-        
+
         $headers = ['Content-Type: application/json'];
         $data = $record["formatted"];
         $appName = urlencode(array_key_exists('appName', $record['context']) ? $record['context']['appName'] : ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'));
@@ -99,7 +88,6 @@ class LogdnaHandler extends \Monolog\Handler\AbstractProcessingHandler {
 
         try {
             $result = \Monolog\Handler\Curl\Util::execute($ch, 1, false);
-            //debug($result, true);
         } catch (\Exception $e) {}
     }
 

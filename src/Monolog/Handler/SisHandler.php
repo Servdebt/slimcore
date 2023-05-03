@@ -4,6 +4,7 @@ namespace Servdebt\SlimCore\Monolog\Handler;
 use Exception;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
+use Monolog\LogRecord;
 use Monolog\Logger;
 
 class SisHandler extends AbstractProcessingHandler

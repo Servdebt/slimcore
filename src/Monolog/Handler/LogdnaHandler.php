@@ -2,6 +2,7 @@
 
 namespace Servdebt\SlimCore\Monolog\Handler;
 use Monolog\Formatter\FormatterInterface;
+use Monolog\LogRecord;
 use Monolog\Logger;
 
 /**
@@ -87,7 +88,6 @@ class LogdnaHandler extends \Monolog\Handler\AbstractProcessingHandler {
 
         try {
             $result = \Monolog\Handler\Curl\Util::execute($ch, 1, false);
-            //debug($result, true);
         } catch (\Exception $e) {}
     }
 

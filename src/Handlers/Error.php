@@ -5,10 +5,12 @@ namespace Servdebt\SlimCore\Handlers;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Respect\Validation\Exceptions\NestedValidationException;
+use Servdebt\SlimCore\Utils\Session;
 use Throwable;
 
 final class Error extends \Slim\Handlers\ErrorHandler
 {
+
     public function __invoke(
         Request $request,
         Throwable $exception,
@@ -20,13 +22,16 @@ final class Error extends \Slim\Handlers\ErrorHandler
         $app = app();
 
         $userInfo = [];
-        if ($app->has('user')) {
-            $user = $app->resolve('user');
-            $userInfo = [
-                "id"       => is_object($user) ? $user->id ?? $user->UserID ?? $user->userid ?? null : null,
-                "username" => is_object($user) ? $user->username ?? $user->Username ?? null : null,
-            ];
-        }
+        try {
+            $user = $app->has('user') ? $app->resolve('user') : Session::get('user');
+            if ($user) {
+                $user = (object)$user;
+                $userInfo = [
+                    "id"       => $user->id ?? $user->UserID ?? $user->userid ?? null,
+                    "username" => $user->username ?? $user->Username ?? null,
+                ];
+            }
+        } catch (\Exception $e) {}
 
         $errorCode = $exception instanceof NestedValidationException ? 422 : 500;
         $errorMsg = $exception->getMessage() . " on " . $exception->getFile() . " line " . $exception->getLine();

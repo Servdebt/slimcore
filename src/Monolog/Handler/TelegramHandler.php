@@ -4,6 +4,7 @@ namespace Servdebt\SlimCore\Monolog\Handler;
 use Exception;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
+use Monolog\Level;
 use Monolog\LogRecord;
 use Monolog\Logger;
 
@@ -29,7 +30,7 @@ class TelegramHandler extends AbstractProcessingHandler
      * @param int $level
      * @param bool $bubble
      */
-    public function __construct(string $token, string $channel, int $level = Logger::DEBUG, bool $bubble = true)
+    public function __construct(string $token, string $channel, int|string|Level $level = Level::Debug, bool $bubble = true)
     {
         parent::__construct($level, $bubble);
 
@@ -41,7 +42,7 @@ class TelegramHandler extends AbstractProcessingHandler
     }
 
 
-    public function write(LogRecord $record): void
+    public function write(array|LogRecord $record): void
     {
         $record = $record->toArray();
 

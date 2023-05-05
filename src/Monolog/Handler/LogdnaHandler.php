@@ -2,6 +2,7 @@
 
 namespace Servdebt\SlimCore\Monolog\Handler;
 use Monolog\Formatter\FormatterInterface;
+use Monolog\Level;
 use Monolog\LogRecord;
 use Monolog\Logger;
 
@@ -55,7 +56,7 @@ class LogdnaHandler extends \Monolog\Handler\AbstractProcessingHandler {
      * @param int $level
      * @param bool $bubble
      */
-    public function __construct(string $ingestion_key, string $hostname, int $level = Logger::DEBUG, bool $bubble = true)
+    public function __construct(string $ingestion_key, string $hostname, int|string|Level $level = Level::Debug, bool $bubble = true)
     {
         parent::__construct($level, $bubble);
 
@@ -67,7 +68,7 @@ class LogdnaHandler extends \Monolog\Handler\AbstractProcessingHandler {
     }
 
 
-    protected function write(LogRecord $record): void
+    protected function write(array|LogRecord $record): void
     {
         $record = $record->toArray();
 

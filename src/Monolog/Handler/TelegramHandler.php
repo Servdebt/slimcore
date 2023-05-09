@@ -27,7 +27,7 @@ class TelegramHandler extends AbstractProcessingHandler
      *
      * @param string $token Telegram Bot Access Token Provided by BotFather
      * @param string $channel Telegram Channel userName
-     * @param int $level
+     * @param int|string|Level $level
      * @param bool $bubble
      */
     public function __construct(string $token, string $channel, int|string|Level $level = Level::Debug, bool $bubble = true)
@@ -44,7 +44,9 @@ class TelegramHandler extends AbstractProcessingHandler
 
     public function write(array|LogRecord $record): void
     {
-        $record = $record->toArray();
+        if ($record instanceof LogRecord) {
+            $record = $record->toArray();
+        }
 
         $appName = array_key_exists('appName', $record['context']) ? $record['context']['appName'] : ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
         $message = $this->getEmoji($record['level']) .' '. $appName .' - '.$record['level_name'] .PHP_EOL .$record['message'];

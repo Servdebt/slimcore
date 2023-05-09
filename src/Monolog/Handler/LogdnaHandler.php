@@ -53,7 +53,7 @@ class LogdnaHandler extends \Monolog\Handler\AbstractProcessingHandler {
     /**
      * @param string $ingestion_key
      * @param string $hostname
-     * @param int $level
+     * @param int|string|Level $level
      * @param bool $bubble
      */
     public function __construct(string $ingestion_key, string $hostname, int|string|Level $level = Level::Debug, bool $bubble = true)
@@ -70,7 +70,9 @@ class LogdnaHandler extends \Monolog\Handler\AbstractProcessingHandler {
 
     protected function write(array|LogRecord $record): void
     {
-        $record = $record->toArray();
+        if ($record instanceof LogRecord) {
+            $record = $record->toArray();
+        }
 
         $headers = ['Content-Type: application/json'];
         $data = $record["formatted"];

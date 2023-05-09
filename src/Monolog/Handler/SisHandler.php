@@ -19,7 +19,7 @@ class SisHandler extends AbstractProcessingHandler
     /**
      * @param string $host
      * @param string $appKey
-     * @param int $level
+     * @param int|string|Level $level
      * @param bool $bubble
      */
     public function __construct(string $host, string $appKey, int|string|Level $level = Level::Debug, bool $bubble = true)
@@ -33,7 +33,9 @@ class SisHandler extends AbstractProcessingHandler
 
     public function write(array|LogRecord $record): void
     {
-        $record = $record->toArray();
+        if ($record instanceof LogRecord) {
+            $record = $record->toArray();
+        }
 
         $url = $this->host.'?appKey='. $this->appKey;
 

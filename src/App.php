@@ -297,7 +297,7 @@ class App
             $url = ltrim($url, '/');
         }
 
-        return strtolower($baseUrl . $indexFile . $url);
+        return $baseUrl . $indexFile . $url;
     }
 
     /**

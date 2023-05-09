@@ -22,7 +22,7 @@ class SisHandler extends AbstractProcessingHandler
      * @param int|string|Level $level
      * @param bool $bubble
      */
-    public function __construct(string $host, string $appKey, int|string|Level $level = Level::Debug, bool $bubble = true)
+    public function __construct(string $host, string $appKey, int|string|Level $level = 100, bool $bubble = true)
     {
         parent::__construct($level, $bubble);
 

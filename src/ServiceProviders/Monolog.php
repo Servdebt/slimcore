@@ -32,7 +32,7 @@ class Monolog implements ProviderInterface
                 $monolog->pushHandler($handler);
 
             } elseif ($logger['type'] == 'sis' && (bool)$logger['enabled']) {
-                $handler = new SisHandler($logger['host'], $logger['appKey']);
+                $handler = new SisHandler($logger['appKey'], $logger['host'] ?? null);
                 $monolog->pushHandler($handler);
 
             } elseif ($logger['type'] == 'telegram' && (bool)$logger['enabled']) {

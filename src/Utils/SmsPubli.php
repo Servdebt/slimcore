@@ -36,6 +36,7 @@ class SmsPubli
             "user_name" => $this->username,
             "report_url" => $this->reportUrl,
             "concat" => 1,
+            "dlr_description" => 1,
             "messages" => [
                 [
                     "from"    => $this->senderName,

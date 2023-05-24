@@ -192,10 +192,24 @@ class QueryBuilder extends Builder
             $qb->orderByRaw($conditions['order']);
         }
 
-        $res = $qb->pluck($columns[1] ?? $columns[0], $columns[0])->toArray();
+        if(!array_key_exists(2,$columns)){
+            $res = $qb->pluck($columns[1] ?? $columns[0], $columns[0])->toArray();
 
-        if (isset($conditions['empty']) && $conditions['empty']) {
-            $res = ['' => ''] + $res;
+            if (isset($conditions['empty']) && $conditions['empty']) {
+                $res = ['' => ''] + $res;
+            }
+        }
+        else{
+            $res = [];
+            foreach ($qb->get() as $item) {
+                if (!isset($res[$item->ddGroup])) {
+                    $res[$item->ddGroup] = [];
+                }
+                //remove alias table
+                $fieldNameID = explode('.',$columns[0]);
+                $fieldNameValue = explode('.',$columns[1]);
+                $res[$item->ddGroup ?? ''][$item->{$fieldNameID[1]}] = $item->{$fieldNameValue[1]};
+            }
         }
 
         return $res;

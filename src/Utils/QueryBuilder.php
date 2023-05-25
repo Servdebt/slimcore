@@ -169,14 +169,7 @@ class QueryBuilder extends Builder
     }
 
 
-    /**
-     * Example: \Lib\QueryBuilder::getData('Users', ['UserID', 'Name'], ['empty' => true])
-     * @param string $table
-     * @param array $columns
-     * @param array $conditions
-     * @return array
-     */
-    public static function getData(string $table, array $columns, array $conditions = []): array
+    public static function getData(string $table, array $columns, array $conditions = [], string $groupResults = ''): array
     {
         $qb = (new self())->from($table)->selectRaw(implode(',',$columns));
 
@@ -188,27 +181,33 @@ class QueryBuilder extends Builder
             $qb->whereRaw($conditions['where']);
         }
 
+        if (isset($conditions['limit'])) {
+            $qb->limit($conditions['limit']);
+        }
+
         if (isset($conditions['order'])) {
             $qb->orderByRaw($conditions['order']);
         }
 
-        if(!array_key_exists(2,$columns)){
+        if(empty($groupResults)){
             $res = $qb->pluck($columns[1] ?? $columns[0], $columns[0])->toArray();
-
             if (isset($conditions['empty']) && $conditions['empty']) {
                 $res = ['' => ''] + $res;
             }
         }
         else{
             $res = [];
-            foreach ($qb->get() as $item) {
-                if (!isset($res[$item->ddGroup])) {
-                    $res[$item->ddGroup] = [];
+            $rows = $qb->get();
+            //remove alias table
+            $fieldNameID = explode('.',$columns[0]);
+            $fieldNameValue = explode('.',$columns[1]);
+            if(is_string($groupResults)) {
+                foreach ($rows as $row) {
+                    if (!isset($res[$row->{$groupResults}])) {
+                        $res[$row->{$groupResults}] = [];
+                    }
+                    $res[$row->{$groupResults} ?? ''][$row->{$fieldNameID[1]}] = $row->{$fieldNameValue[1]};
                 }
-                //remove alias table
-                $fieldNameID = explode('.',$columns[0]);
-                $fieldNameValue = explode('.',$columns[1]);
-                $res[$item->ddGroup ?? ''][$item->{$fieldNameID[1]}] = $item->{$fieldNameValue[1]};
             }
         }
 

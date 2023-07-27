@@ -18,9 +18,9 @@ class PlatesCacheExtension implements ExtensionInterface {
     {
         $this->cacheKey = $cacheKey;
         $this->cacheKeyTtl = $cacheKeyTtl;
-        $this->redis = app()->resolve('redis');
+        $this->redis = app()->has('redis') ? app()->resolve('redis') : null;
 
-        $content = $this->redis->get($this->cacheKey);
+        $content = $this->redis?->get($this->cacheKey);
         if ($content != null) {
             echo $content;
             return false;
@@ -37,5 +37,4 @@ class PlatesCacheExtension implements ExtensionInterface {
         ob_end_clean();
         echo $content;
     }
-    
 }

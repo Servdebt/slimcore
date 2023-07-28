@@ -4,9 +4,7 @@ namespace Servdebt\SlimCore\Utils;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model as BaseEloquentModel;
-use Lib\QueryBuilder;
 use Illuminate\Database\Eloquent\Builder;
-use Servdebt\SlimCore\Utils\Session;
 
 class EloquentModel extends BaseEloquentModel
 {

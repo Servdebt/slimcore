@@ -223,10 +223,10 @@ class QueryBuilder extends Builder
     {
         $string = trim($string ?? '');
         $operator = '=';
-        if (str_starts_with($string, '<')) $operator = '<';
-        elseif (str_starts_with($string, '<=')) $operator = '<=';
-        elseif (str_starts_with($string, '>')) $operator = '>';
+        if (str_starts_with($string, '<=')) $operator = '<=';
+        elseif (str_starts_with($string, '<')) $operator = '<';
         elseif (str_starts_with($string, '>=')) $operator = '>=';
+        elseif (str_starts_with($string, '>')) $operator = '>';
         $string = trim(str_replace($operator, "", $string));
 
         return $operator;

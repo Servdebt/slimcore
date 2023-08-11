@@ -66,7 +66,7 @@ class Controller
         $val = Session::get("flash-message-$key");
         Session::delete("flash-message-$key");
 
-        return $val ? json_decode($defaultValue) : $defaultValue;
+        return $val ? json_decode($val) : $defaultValue;
     }
 
 }

@@ -13,7 +13,21 @@ class EloquentModel extends BaseEloquentModel
 
     public $timestamps = false;
 
+    public array $autoFillColumns = [];
+
+    public array $defaultValues = [];
+
     public array $setNullOnEmpty = [];
+
+
+    public function __construct(array $attributes = [])
+    {
+        if (!$this->exists) {
+            $this->attributes = array_merge($this->attributes, $this->defaultValues);
+        }
+
+        parent::__construct($attributes);
+    }
 
 
     /**
@@ -53,13 +67,13 @@ class EloquentModel extends BaseEloquentModel
     }
 
 
-    public function fill(array $attributes)
+    public function setAttribute($key, $value)
     {
-        foreach ($attributes as $key => &$val) {
-            $attributes[$key] = $val === '' ? null : $val;
+        if (is_scalar($value) && in_array($key, $this->setNullOnEmpty) && empty($value)) {
+            $value = null;
         }
 
-        parent::fill($attributes);
+        return parent::setAttribute($key, $value);
     }
 
 
@@ -104,17 +118,7 @@ class EloquentModel extends BaseEloquentModel
 
     public function save(array $options = [], bool $validate = true, string $scenario = 'default'): bool
     {
-        // set fields DateCreated/Updated Created/UpdatedByUserID
-        $dtField = !$this->exists ? 'DateCreated' : 'DateUpdated';
-        $userField = !$this->exists ? 'CreatedByUserID' : 'UpdatedByUserID';
-        $userid = app()->isConsole() ? app()->getConfig('app.slsAdminUserID') : Session::get('user')['UserID'] ?? null;
-
-        if (array_key_exists($dtField, $this->attributes)) {
-            $this->attributes[$dtField] = date('Y-m-d H:i:s');
-        }
-        if (array_key_exists($userField, $this->attributes)) {
-            $this->attributes[$userField] = $userid;
-        }
+        $this->autoFillColumnsSetValues();
 
         // validation
         if ($validate && method_exists($this, 'getValidator')) {
@@ -122,6 +126,25 @@ class EloquentModel extends BaseEloquentModel
         }
 
         return parent::save($options);
+    }
+
+
+    private function autoFillColumnsSetValues()
+    {
+        $UserID = app()->isConsole() ? app()->getConfig('app.slsAdminUserID') : (Session::get('user')['UserID'] ?? null);
+
+        if (!$this->exists && in_array('DateCreated', $this->autoFillColumns)) {
+            $this->setAttribute('DateCreated', date('Y-m-d H:i:s'));
+        }
+        if (!$this->exists && in_array('CreatedByUserID', $this->autoFillColumns)) {
+            $this->setAttribute('CreatedByUserID', $UserID);
+        }
+        if ($this->exists && in_array('DateUpdated', $this->autoFillColumns)) {
+            $this->setAttribute('DateUpdated', date('Y-m-d H:i:s'));
+        }
+        if ($this->exists && in_array('UpdatedByUserID', $this->autoFillColumns)) {
+            $this->setAttribute('UpdatedByUserID', $UserID);
+        }
     }
 
 }

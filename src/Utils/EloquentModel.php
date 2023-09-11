@@ -69,7 +69,7 @@ class EloquentModel extends BaseEloquentModel
 
     public function setAttribute($key, $value)
     {
-        if (is_scalar($value) && in_array($key, $this->setNullOnEmpty) && empty($value)) {
+        if (is_array($this->setNullOnEmpty) && is_string($value) && trim($value) === '') {
             $value = null;
         }
 

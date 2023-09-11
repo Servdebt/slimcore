@@ -133,17 +133,24 @@ class EloquentModel extends BaseEloquentModel
     {
         $UserID = app()->isConsole() ? app()->getConfig('app.slsAdminUserID') : (Session::get('user')['UserID'] ?? null);
 
-        if (!$this->exists && in_array('DateCreated', $this->autoFillColumns)) {
+        if (!$this->exists && in_array('DateCreated', $this->autoFillColumns) && $this->DateCreated == null) {
             $this->setAttribute('DateCreated', date('Y-m-d H:i:s'));
         }
-        if (!$this->exists && in_array('CreatedByUserID', $this->autoFillColumns)) {
+        if (!$this->exists && in_array('CreatedByUserID', $this->autoFillColumns) && $this->CreatedByUserID == null) {
             $this->setAttribute('CreatedByUserID', $UserID);
         }
-        if ($this->exists && in_array('DateUpdated', $this->autoFillColumns)) {
+        if ($this->exists && in_array('DateUpdated', $this->autoFillColumns) && $this->DateUpdated == null) {
             $this->setAttribute('DateUpdated', date('Y-m-d H:i:s'));
         }
-        if ($this->exists && in_array('UpdatedByUserID', $this->autoFillColumns)) {
+        if ($this->exists && in_array('UpdatedByUserID', $this->autoFillColumns) && $this->UpdatedByUserID == null) {
             $this->setAttribute('UpdatedByUserID', $UserID);
+        }
+
+        if (!$this->exists && in_array('CreationDate', $this->autoFillColumns) && $this->CreationDate == null) {
+            $this->setAttribute('CreationDate', date('Y-m-d H:i:s'));
+        }
+        if (!$this->exists && in_array('CreatedBy', $this->autoFillColumns) && $this->CreatedBy == null) {
+            $this->setAttribute('CreatedBy', $UserID);
         }
     }
 

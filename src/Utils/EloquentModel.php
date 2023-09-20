@@ -122,7 +122,7 @@ class EloquentModel extends BaseEloquentModel
 
         // validation
         if ($validate && method_exists($this, 'getValidator')) {
-            $this->getValidator()->assert($this->getAttributes());
+            $this->getValidator($scenario)->assert($this->getAttributes());
         }
 
         return parent::save($options);

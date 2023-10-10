@@ -31,12 +31,20 @@ class SmsPubli
 
     public function sendSms($countryCode, $destination, $message, $sendAt = null) :mixed
     {
+        preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $message, $urls);
+        $link = '';
+        if (count($urls[0]) == 1) {
+            $link = $urls[0][0];
+            $message = str_replace($link, '{LINK}', $message);
+        }
+
         $data = json_encode([
             "api_key" => $this->apiKey,
             "user_name" => $this->username,
             "report_url" => $this->reportUrl,
             "concat" => 1,
             "dlr_description" => 1,
+            "link" => $link,
             "messages" => [
                 [
                     "from"    => $this->senderName,
@@ -48,7 +56,7 @@ class SmsPubli
         ]);
 
         $res = HttpClient::request(HttpClient::POST,
-            "https://api.gateway360.com/api/3.0/sms/send",
+            'https://api.gateway360.com/api/3.0/sms/send' . (!empty($link) ? '-link' : ''),
             [],
             ['Content-Type' => 'application/json'],
             [],

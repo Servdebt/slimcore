@@ -12,7 +12,7 @@ class Session
     {
         $defaults = [
             'name' => 'app',
-            'lifetime' => 60 * 10,
+            'lifetime' => time()+3600,
             'path' => '/',
             'domain' => '',
             'secure' => false,

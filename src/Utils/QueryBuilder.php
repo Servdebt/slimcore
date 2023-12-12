@@ -174,7 +174,13 @@ class QueryBuilder extends Builder
         $qb = (new self())->from($table)->selectRaw(implode(',',$columns));
 
         if (isset($conditions['join'])) {
-            $qb->join($conditions['join']['table'], $conditions['join']['first'],$conditions['join']['operator'],$conditions['join']['second'],$conditions['join']['type']);
+            if (count($conditions['join']) == count($conditions['join'], COUNT_RECURSIVE)) {
+                $qb->join($conditions['join']['table'], $conditions['join']['first'], $conditions['join']['operator'], $conditions['join']['second'], $conditions['join']['type']);
+            } else {
+                foreach ($conditions['join'] as $join) {
+                    $qb->join($join['table'], $join['first'], $join['operator'], $join['second'], $join['type']);
+                }
+            }
         }
 
         if (isset($conditions['where'])) {

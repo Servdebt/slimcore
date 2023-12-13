@@ -17,15 +17,15 @@ class Command
         }
     }
 
-    public function ask($question, $color = '92m'): string|false
+    protected function ask($question, $color = '92m'): string|false
     {
-        echo "\033[{$color}{$question} \033[0m\n".PHP_EOL;
+        echo "\033[{$color}{$question} \033[0m".PHP_EOL;
         return readline();
     }
 
-    public function output($question, $color = '95m'): void
+    protected function output($question, $color = '95m'): void
     {
-        echo "\033[{$color}{$question} \033[0m\n".PHP_EOL;
+        echo "\033[{$color}{$question} \033[0m".PHP_EOL;
     }
 
 }

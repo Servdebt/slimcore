@@ -11,7 +11,7 @@ class Help extends Command
 	public function show(string $command = '') :string
     {
         $ret  = PHP_EOL. "usage: php ".ROOT_PATH."cli.php <command-name> <method-name> [parameters...]" . PHP_EOL . PHP_EOL;
-        $ret .= "The following ". (empty($command) ? "commands" : "tasks") ." are available:" . PHP_EOL;
+        $ret .= "The following ". (empty($command) ? "commands" : "tasks") ." are available:" . PHP_EOL.PHP_EOL;
       
         if (!empty($command) && is_file(APP_PATH.'Console'.DS.$command.".php")) {
             $fileinfo = new \SplFileInfo(APP_PATH.'Console'.DS.$command.".php");

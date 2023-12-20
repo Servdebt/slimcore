@@ -9,27 +9,27 @@ class SmsPubli
     public string $senderName;
     public string $reportUrl;
 
-    public function __construct($apiKey, $username = null)
+    public function __construct(string $apiKey, ?string $username = null)
     {
         $this->apiKey = $apiKey;
         $this->username = $username;
     }
 
-    public function setFrom($name): self
+    public function setFrom(string $name): self
     {
         $this->senderName = $name;
 
         return $this;
     }
 
-    public function setReportUrl($url): self
+    public function setReportUrl(string $url): self
     {
         $this->reportUrl = $url;
 
         return $this;
     }
 
-    public function sendSms($countryCode, $destination, $message, $sendAt = null) :mixed
+    public function sendSms(int|string $countryCode, int|string $destination, string $message, ?string $sendAt = null) : object
     {
         preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $message, $urls);
         $link = '';

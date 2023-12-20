@@ -40,7 +40,7 @@ class HttpClient
             'code' => $response !== null ? $response->status_code : 404,
             'headers' => $response !== null ? $response->headers : (object)[],
             'body' => $response !== null ? $response->body : "",
-            'isRedirect' => $response !== null ? $response->is_redirect() : false,
+            'isRedirect' => $response !== null && $response->is_redirect(),
         ];
     }
 

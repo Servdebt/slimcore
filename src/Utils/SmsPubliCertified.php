@@ -40,6 +40,9 @@ class SmsPubliCertified
         }
         */
 
+        // remove not acceptable chars
+        $message = str_replace(['$'], '', $message);
+
         $res = HttpClient::request(HttpClient::GET, 'https://sms.avivavoice.com/AvivaSMS/httpapi', [
             'action' => 'submitMessage',
             'user' => $this->username,

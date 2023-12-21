@@ -78,4 +78,11 @@ class Ldap
             ->where('cn', '=',$cname)
             ->first();
     }
+
+    public function getExpirePasswordOfUser(string $baseDn, string $username) :?array
+    {
+        return $this->ldapConn->query()->setDn($baseDn)->select('msDS-UserPasswordExpiryTimeComputed')
+            ->where('samaccountname', '=',$username)
+            ->first();
+    }
 }

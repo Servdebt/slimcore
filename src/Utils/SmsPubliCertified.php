@@ -31,28 +31,32 @@ class SmsPubliCertified
 
     public function sendSms(int|string $countryCode, int|string $destination, string $message, ?string $sendAt = null) : object
     {
-        /*
-        preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $message, $urls);
-        $link = '';
-        if (count($urls[0]) == 1) {
-            $link = $urls[0][0];
-            $message = str_replace($link, '', $message);
-        }
-        */
-
         // remove not acceptable chars
         $message = str_replace(['$'], '', $message);
 
         $res = HttpClient::request(HttpClient::GET, 'https://sms.avivavoice.com/AvivaSMS/httpapi', [
-            'action' => 'submitMessage',
-            'user' => $this->username,
-            'password' => $this->password,
+            'action'    => 'submitMessage',
+            'user'      => $this->username,
+            'password'  => $this->password,
             'sender'    => $this->senderName,
-            'recipients' => $countryCode.$destination,
-            'text' => urlencode($message),
+            'recipients'=> $countryCode.$destination,
+            'text'      => urlencode($message),
             'deliveryReportUrl' => $this->reportUrl,
-            'deferredDelivery' => str_replace([" ", "-", ":"], "", $sendAt ?? ''),
+            'deferredDelivery'  => str_replace([" ", "-", ":"], "", $sendAt ?? ''),
             //'smsSite' => $link,
+        ]);
+
+        return (object)['code' => $res->code, 'body' => json_decode($res->body)];
+    }
+
+
+    public function downloadCertificate(string $msgId) : object
+    {
+        $res = HttpClient::request(HttpClient::GET, 'https://sms.avivavoice.com/AvivaSMS/httpapi', [
+            'action'    => 'downloadCertification',
+            'user'      => $this->username,
+            'password'  => $this->password,
+            'idMessage' => $msgId
         ]);
 
         return (object)['code' => $res->code, 'body' => json_decode($res->body)];

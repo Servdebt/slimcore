@@ -23,9 +23,9 @@ class Command
         return readline();
     }
 
-    protected function output($question, $color = '95m'): void
+    protected function output($str, $color = '95m'): void
     {
-        echo "\033[{$color}{$question} \033[0m".PHP_EOL;
+        echo "\033[{$color}{$str} \033[0m".PHP_EOL;
     }
 
 }

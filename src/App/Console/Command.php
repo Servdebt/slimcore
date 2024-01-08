@@ -7,7 +7,7 @@ class Command
 {
 
     public float $startTime;
-    private ?string $logFilePath = null;
+    public ?string $logFilePath = null;
 
 
     public function __construct()

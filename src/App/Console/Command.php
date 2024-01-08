@@ -1,16 +1,19 @@
 <?php
 
 namespace Servdebt\SlimCore\App\Console;
+use Psr\Log\LogLevel;
 
 class Command
 {
 
     public float $startTime;
+    private ?string $logFilePath = null;
+
 
     public function __construct()
     {
-		$this->startTime = microtime(true);
-		
+        $this->startTime = microtime(true);
+
         if (app()->getConfig('consoleOutput')) {
             ob_implicit_flush();
             ob_end_flush();
@@ -23,9 +26,23 @@ class Command
         return readline();
     }
 
-    protected function output($str, $color = '95m'): void
+    protected function output($question, $color = '95m'): void
     {
-        echo "\033[{$color}{$str} \033[0m".PHP_EOL;
+        echo "\033[{$color}{$question} \033[0m".PHP_EOL;
+    }
+
+
+    protected function log(string $string, bool $addLog = false, array $context = []): void
+    {
+        $this->output($string);
+
+        if (!empty($this->logFilePath)) {
+            file_put_contents($this->logFilePath, $string.PHP_EOL, FILE_APPEND);
+        }
+
+        if ($addLog) {
+            addLog(LogLevel::ERROR, $string, $context);
+        }
     }
 
 }

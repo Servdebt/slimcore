@@ -23,6 +23,10 @@ class Session
             $settings['lifetime'] = time() + (int)$settings['lifetime'];
         }
 
+        if (!empty($settings['filesPath']) && !is_dir($settings['filesPath'])) {
+            mkdir($settings['filesPath'], 0777, true);
+        }
+
         session_save_path($settings['filesPath']);
         session_name($settings['name']);
         session_start();

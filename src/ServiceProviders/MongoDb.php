@@ -2,7 +2,7 @@
 
 namespace Servdebt\SlimCore\ServiceProviders;
 
-use \MongoDB\Client;
+use MongoDB\Client;
 use SequelMongo\QueryBuilder;
 use Servdebt\SlimCore\App;
 
@@ -11,20 +11,17 @@ class MongoDb implements ProviderInterface
 
     public static function register(App $app, $serviceName, array $settings = [])
     {
-        $app->registerInContainer($serviceName, function() use ($serviceName, $settings) {
+        $conn = new Client($settings["uri"], $settings["options"]);
 
-            $con = new Client($settings["uri"], $settings["options"]);
+        /** @var \MongoDB\Database $conn */
+        $conn = $conn->selectDatabase($settings['db']);
 
-            /** @var \MongoDB\Database $con */
-            $con = $con->selectDatabase($settings['db']);
+        if ((bool)$settings["setGlobal"]) {
+            // Set a global connection to be used on all new QueryBuilders
+            QueryBuilder::setGlobalConnection($conn);
+        }
 
-            if ((bool)$settings["setGlobal"]) {
-                // Set a global connection to be used on all new QueryBuilders
-                QueryBuilder::setGlobalConnection($con);
-            }
-
-            return $con;
-        });
+        $app->registerInContainer($serviceName, $conn);
     }
 
 }

@@ -10,7 +10,6 @@ class IlluminateDatabase implements ProviderInterface
 
     public static function register(App $app, $serviceName, array $settings = [])
     {
-        $capsule = null;
         if ($app->has('capsule')) {
             $capsule = $app->capsule;
         } else {

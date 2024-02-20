@@ -1,7 +1,6 @@
 <?php
 
 namespace Servdebt\SlimCore\Utils;
-use Servdebt\SlimCore\App;
 use Predis\Client;
 use Predis\ClientInterface;
 use Traversable;
@@ -9,6 +8,9 @@ use Traversable;
 class Redis
 {
     public Client $client;
+
+    public int $redisReads = 0;
+    public int $redisWrites = 0;
 
 
     public function __construct(ClientInterface $client)
@@ -21,6 +23,7 @@ class Redis
     {
         $item = $this->client->get($this->canonicalize($key));
         $item = $uncompressData ? $this->uncompress($item) : $item;
+        $this->redisReads++;
 
         if (!empty($item)) {
             return $item;
@@ -34,6 +37,7 @@ class Redis
     {
         $value = $compressData ? $this->compress($value) : $value;
         $key = $this->canonicalize($key);
+        $this->redisWrites++;
 
         if ($ttl === null) {
             return $this->client->set($key, $value) == 'OK';
@@ -53,6 +57,8 @@ class Redis
 
     public function delete(string $key): bool
     {
+        $this->redisWrites++;
+
         return $this->client->del($this->canonicalize($key)) == 1;
     }
 
@@ -74,6 +80,7 @@ class Redis
         $result = [];
         foreach ($keys as $key) {
             $val = $this->get($key, $default);
+            $this->redisReads++;
             $result[$key] = $uncompressData ? $this->uncompress($val) : $val;
         }
 
@@ -89,12 +96,13 @@ class Redis
 
         try {
             $redis = $this;
-            $responses = $this->client->transaction(function ($tx) use ($values, $ttl, $redis, $compressData) {
+            $this->client->transaction(function ($tx) use ($values, $ttl, $redis, $compressData) {
                 foreach ($values as $key => $value) {
                     $val = $compressData ? $this->compress($value) : $value;
                     if (!$redis->set($key, $val, $ttl)) {
                         throw new \Exception();
                     }
+                    $this->redisWrites++;
                 }});
 
         } catch (\Exception $e) {
@@ -113,11 +121,12 @@ class Redis
 
         try {
             $redis = $this;
-            $transaction = $this->client->transaction(function ($tx) use ($keys, $redis) {
+            $this->client->transaction(function ($tx) use ($keys, $redis) {
                 foreach ($keys as $key) {
                     if (!$redis->delete($key)) {
                         throw new \Exception();
                     }
+                    $this->redisWrites++;
                 }});
         } catch (\Exception $e) {
             return false;
@@ -132,6 +141,7 @@ class Redis
         if (!is_string($key)) {
             throw new \Exception("Provided key is not a legal string.");
         }
+        $this->redisReads++;
 
         return $this->client->exists($this->canonicalize($key)) === 1;
     }
@@ -146,6 +156,8 @@ class Redis
             $values[$i] = $compressData ? $this->compress($values[$i]) : $values[$i];
         }
 
+        $this->redisWrites++;
+
         return $this->client->rpush($this->canonicalize($queue), $values);
     }
 
@@ -153,6 +165,7 @@ class Redis
     public function dequeue($queue, bool $uncompressData = true): mixed
     {
         $var = $this->client->lpop($this->canonicalize($queue));
+        $this->redisReads++;
 
         return $uncompressData ? $this->uncompress($var[1]) : $var[1];
     }
@@ -164,6 +177,7 @@ class Redis
 
         while (1) {
             $var = $this->client->blpop($this->canonicalize($queue), $timeout);
+            $this->redisReads++;
 
             if ($var != null) break;
             $this->client->ping();
@@ -214,6 +228,7 @@ class Redis
 
     public function testRateLimit(string $key, int $window, int $limit): mixed
     {
+        $this->redisReads++;
         $script = <<<'LUA'
 local token = KEYS[1]
 local now = tonumber(KEYS[2])

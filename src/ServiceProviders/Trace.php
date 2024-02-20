@@ -9,7 +9,8 @@ class Trace implements ProviderInterface
 
     public static function register(App $app, string $serviceName, array $settings = [])
     {
-        $st = new \Servdebt\SlimCore\Utils\Logger();
+        $st = new Logger();
+
         $app->registerInContainer($serviceName, $st);
     }
 

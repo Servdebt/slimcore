@@ -26,6 +26,10 @@ class IlluminateDatabase implements ProviderInterface
             $db->enableQueryLog();
         }
 
+        foreach ($settings['inisql'] ?? [] as $sql) {
+            $db->statement($sql);
+        }
+
         $app->registerInContainer($serviceName, $db);
     }
 

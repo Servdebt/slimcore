@@ -26,7 +26,7 @@ class SisHandler extends AbstractProcessingHandler
     {
         parent::__construct($level, $bubble);
 
-        $this->host     = $host ?? 'http://devapps.servdebt.pt:8010/log';
+        $this->host     = $host ?? 'https://devapps.servdebt.pt:8010/log';
         $this->appKey   = $appKey;
     }
 

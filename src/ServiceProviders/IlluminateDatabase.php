@@ -20,9 +20,9 @@ class IlluminateDatabase implements ProviderInterface
         }
 
         $capsule->addConnection($settings, $serviceName);
-
         $db = $capsule->getConnection($serviceName);
-        if ((bool)$settings['profiling']) {
+
+        if ($settings['profiling'] ?? false) {
             $db->enableQueryLog();
         }
 

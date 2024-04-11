@@ -10,15 +10,14 @@ use Monolog\Logger;
 
 class TelegramHandler extends AbstractProcessingHandler
 {
-    protected $timeOut;
-    protected $token;
-    protected $channel;
-    protected $dateFormat;
+    protected string $token;
+    protected string $channel;
+    protected string $dateFormat;
 
     /**
      * @var array
      */
-    protected $curlOptions;
+    protected array $curlOptions;
 
     const host = 'https://api.telegram.org/bot';
 
@@ -37,7 +36,6 @@ class TelegramHandler extends AbstractProcessingHandler
         $this->token        = $token;
         $this->channel      = $channel;
         $this->dateFormat   = 'Y-m-d H:i:s';
-        $this->timeOut      = 100;
         $this->curlOptions  = [];
     }
 
@@ -53,7 +51,6 @@ class TelegramHandler extends AbstractProcessingHandler
         
         $ch = \curl_init();
         $url = self::host . $this->token . "/SendMessage";
-        $timeOut = $this->timeOut;
 
         \curl_setopt($ch, CURLOPT_URL, $url);
         \curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -68,7 +65,7 @@ class TelegramHandler extends AbstractProcessingHandler
         }
 
         try {
-            $result = \Monolog\Handler\Curl\Util::execute($ch, 1, false);
+            \Monolog\Handler\Curl\Util::execute($ch, 1, false);
         } catch (\Exception $e) {}
     }
 
@@ -76,14 +73,14 @@ class TelegramHandler extends AbstractProcessingHandler
     protected function emojiMap(): array
     {
         return [
-            Logger::DEBUG     => '',
-            Logger::INFO      => '‍',
-            Logger::NOTICE    => '',
-            Logger::WARNING   => '⚡️',
-            Logger::ERROR     => '⚠',
-            Logger::CRITICAL  => '⚠',
-            Logger::ALERT     => '⚠',
-            Logger::EMERGENCY => '🚨',
+            100 => '',
+            200 => '‍',
+            250 => '',
+            300 => '⚡️',
+            400 => '⚠',
+            500 => '⚠',
+            550 => '⚠',
+            600 => '🚨',
         ];
     }
 

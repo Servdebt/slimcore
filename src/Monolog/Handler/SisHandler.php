@@ -1,24 +1,18 @@
 <?php
 namespace Servdebt\SlimCore\Monolog\Handler;
 
-use Exception;
-use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Level;
 use Monolog\LogRecord;
-use Monolog\Logger;
 
 class SisHandler extends AbstractProcessingHandler
 {
-    protected $host;
-    protected $apiKey;
-    protected $token;
-    protected $channel;
-    protected $dateFormat;
+    protected string $host;
+    protected ?string $appKey;
 
     /**
-     * @param string $host
      * @param string $appKey
+     * @param string|null $host
      * @param int|string|Level $level
      * @param bool $bubble
      */
@@ -40,7 +34,7 @@ class SisHandler extends AbstractProcessingHandler
         $url = $this->host.'?appKey='. $this->appKey;
 
         $headers = ['Content-Type: application/json'];
-        
+
         $ch = \curl_init();
         \curl_setopt($ch, CURLOPT_URL, $url);
         \curl_setopt($ch, CURLOPT_POST, true);

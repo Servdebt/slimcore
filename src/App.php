@@ -35,7 +35,7 @@ class App
 
     private static ?self $instance = null;
 
-    protected function __construct(ContainerInterface $container = null)
+    final function __construct(ContainerInterface $container = null)
     {
         // error handler to catch warnings and notices
         set_error_handler(function ($severity, $message, $file, $line) {

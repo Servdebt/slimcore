@@ -121,7 +121,8 @@ class QueryBuilder extends Builder
 
             // replace query placeholders
             foreach ($matches[1] as $match) {
-                $ids = array_unique(array_column($data, $match));
+                $ids = array_filter(array_unique(array_column($data, $match)), fn($id) => !is_null($id) && $id !== ''); // remove empty vals
+                if (empty($ids)) $ids = [0];
                 $query = str_replace('{{'.$match.'}}', "(".implode(',', $ids).")", $query);
             }
 

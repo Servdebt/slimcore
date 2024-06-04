@@ -118,19 +118,15 @@ class QueryBuilder extends Builder
         foreach ($this->lazyLoads as $relationName => $ll) {
             $query = $ll['query'];
             preg_match_all('/\{\{(.*?)\}\}/s', $query, $matches);
-            $ids = [];
 
             // replace query placeholders
             foreach ($matches[1] as $match) {
-                $ids = array_unique(array_column($data, $match));
-                //remove empty ids
-                $ids = array_filter($ids, fn($id) => !is_null($id) && $id !== '');
+                $ids = array_filter(array_unique(array_column($data, $match)), fn($id) => !is_null($id) && $id !== ''); // remove empty vals
+                if (empty($ids)) $ids = [0];
                 $query = str_replace('{{'.$match.'}}', "(".implode(',', $ids).")", $query);
             }
 
-            //run query if exists ids to search
-            $res = !empty($ids) ? $this->connection->select($query) : [];
-
+            $res = $this->connection->select($query);
             foreach ($data as &$dataLine) {
                 $dataLine->{$relationName} = array_values(array_filter($res, function ($elem) use($dataLine, $ll) {
                     return $elem->{$ll['key']} == $dataLine->{$ll['key']};

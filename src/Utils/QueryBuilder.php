@@ -40,13 +40,23 @@ class QueryBuilder extends Builder
     }
 
 
+    public function compareInt($column, $value, string $conditionType = 'and'): self
+    {
+        $operator = $this->extractOperator($value);
+        $value = $this->formatNumerics($value);
+
+        if (is_numeric($value) && (int)$value == (float)$value) {
+            $this->where($column, $operator, $value, strtolower($conditionType));
+        }
+
+        return $this;
+    }
+
+
     public function compareNumeric($column, $value, string $conditionType = 'and'): self
     {
         $operator = $this->extractOperator($value);
-
-        $value = str_replace([' ', '€', '$', '%'], '', $value);
-        $value = str_replace(',', '.', $value);
-        $value = preg_replace('/\.(?=.*\.)/', '', $value);
+        $value = $this->formatNumerics($value);
 
         if (is_numeric($value)) {
             $this->where($column, $operator, $value, strtolower($conditionType));
@@ -159,11 +169,6 @@ class QueryBuilder extends Builder
     }
 
 
-    /**
-     * @param $valueField
-     * @param null $keyField
-     * @return array
-     */
     public function columnsToArray($valueField, $keyField = null): array
     {
         return array_column($this->toArray(), $valueField, $keyField);
@@ -222,10 +227,6 @@ class QueryBuilder extends Builder
     }
 
 
-    /**
-     * @param string $string
-     * @return string
-     */
     private function extractOperator(mixed &$string): string
     {
         $string = trim($string ?? '');
@@ -237,6 +238,16 @@ class QueryBuilder extends Builder
         $string = trim(str_replace($operator, "", $string));
 
         return $operator;
+    }
+
+
+    private function formatNumerics($value): mixed
+    {
+        $value = str_replace([' ', '€', '$', '%'], '', $value);
+        $value = str_replace(',', '.', $value);
+        $value = preg_replace('/\.(?=.*\.)/', '', $value);
+
+        return $value;
     }
 
 }

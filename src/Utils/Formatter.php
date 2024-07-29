@@ -27,8 +27,11 @@ class Formatter
      * @return string
      * @throws \Exception
      */
-    public static function dateTime(DateTime|string $datetime = "now", int $dateType = 2, int $timeType = -1, ?string $locale = null, mixed $timezone = null): string
+    public static function dateTime(DateTime|string|null $datetime = "now", int $dateType = 2, int $timeType = -1, ?string $locale = null, mixed $timezone = null): string
     {
+        if (is_null($datetime)) {
+            return "";
+        }
         if (is_string($datetime)) {
             $datetime = new DateTime($datetime);
         }
@@ -50,8 +53,12 @@ class Formatter
      * @return string
      * @throws \Exception
      */
-    public static function formatDate(DateTime|string $datetime = "now", string $format = 'Y-m-d H:i:s', mixed $timezone = null): string
+    public static function formatDate(DateTime|string|null $datetime = "now", string $format = 'Y-m-d H:i:s', mixed $timezone = null): string
     {
+        if (is_null($datetime)) {
+            return "";
+        }
+
         $timezone = $timezone instanceof \DateTimeZone ? $timezone :
             new \DateTimeZone($timezone ?? date_default_timezone_get());
 
@@ -71,8 +78,12 @@ class Formatter
      * @return string
      * @throws \Exception
      */
-    public static function dateToTimeElapsed(DateTime $datetime, bool $full = false): string
+    public static function dateToTimeElapsed(?DateTime $datetime = null, bool $full = false): string
     {
+        if (is_null($datetime)) {
+            return "";
+        }
+
         $now = new DateTime;
         $ago = $datetime;
         $diff = $now->diff($ago);

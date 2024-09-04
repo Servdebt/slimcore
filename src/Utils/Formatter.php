@@ -1,33 +1,15 @@
 <?php
 
 namespace Servdebt\SlimCore\Utils;
-use Cassandra\Date;
 use \DateTime;
 use \NumberFormatter;
 use \Locale;
 use \IntlDateFormatter;
 
-
 class Formatter
 {
 
-    public const FULL = 0;
-    public const LONG = 1;
-    public const MEDIUM = 2;
-    public const SHORT = 3;
-    public const NONE = -1;
-
-
-    /**
-     * @param DateTime|string $datetime
-     * @param int $dateType
-     * @param int $timeType
-     * @param string|null $locale
-     * @param mixed|null $timezone
-     * @return string
-     * @throws \Exception
-     */
-    public static function dateTime(DateTime|string|null $datetime = "now", int $dateType = 2, int $timeType = -1, ?string $locale = null, mixed $timezone = null): string
+    public static function dateTime(DateTime|string|null $datetime = 'now', bool $showDate = true, bool $showTime = false, ?string $locale = null, mixed $timezone = null): string
     {
         if (is_null($datetime)) {
             return "";
@@ -38,22 +20,15 @@ class Formatter
 
         return (new IntlDateFormatter(
             $locale ?? Locale::getDefault(),
-            $dateType,
-            $timeType,
+            $showDate ? IntlDateFormatter::MEDIUM : IntlDateFormatter::NONE,
+            $showTime ? IntlDateFormatter::SHORT : IntlDateFormatter::NONE,
             $timezone ?? date_default_timezone_get(),
             IntlDateFormatter::GREGORIAN,
         ))->format($datetime);
     }
 
 
-    /**
-     * @param DateTime|string $datetime
-     * @param string $format
-     * @param mixed|null $timezone
-     * @return string
-     * @throws \Exception
-     */
-    public static function formatDate(DateTime|string|null $datetime = "now", string $format = 'Y-m-d H:i:s', mixed $timezone = null): string
+    public static function dateFormat(DateTime|string|null $datetime = 'now', string $format = 'Y-m-d H:i', mixed $timezone = null): string
     {
         if (is_null($datetime)) {
             return "";
@@ -72,12 +47,6 @@ class Formatter
     }
 
 
-    /**
-     * @param DateTime $datetime
-     * @param bool $full
-     * @return string
-     * @throws \Exception
-     */
     public static function dateToTimeElapsed(?DateTime $datetime = null, bool $full = false): string
     {
         if (is_null($datetime)) {
@@ -114,14 +83,6 @@ class Formatter
     }
 
 
-    /**
-     * returns a string with currency formatted accordingly to locale settings
-     * @param ?float $value
-     * @param int $decimals
-     * @param string $currencyCode
-     * @param string|null $locale
-     * @return string
-     */
     public static function currency(?float $value, int $decimals = 2, string $currencyCode = 'EUR', ?string $locale = null) :string
     {
         $nf = new NumberFormatter($locale ?? Locale::getDefault(), NumberFormatter::CURRENCY);
@@ -134,23 +95,12 @@ class Formatter
     }
 
 
-    /**
-     * returns a string with decimal formatted accordingly to locale settings
-     * @param ?float $value
-     * @param string|null $locale
-     */
     public static function int(?float $value, ?string $locale = null): string
     {
         return self::decimal($value, 0, $locale);
     }
 
 
-    /**
-     * returns a string with decimal formatted accordingly to locale settings
-     * @param ?float $value
-     * @param int $decimals
-     * @param string|null $locale
-     */
     public static function decimal(?float $value, int $decimals = 2, ?string $locale = null): string
     {
         $nf = new NumberFormatter($locale ?? Locale::getDefault(), NumberFormatter::DECIMAL);
@@ -160,12 +110,15 @@ class Formatter
     }
 
 
-    /**
-     * returns human readable file size
-     * @param int $size
-     * @param int $decimals
-     * @return string
-     */
+    public static function percentage($value, int $decimals = 0)
+    {
+        $nf = new NumberFormatter(Locale::getDefault(), NumberFormatter::PERCENT);
+        $nf->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
+
+        return $nf->format($value);
+    }
+
+
     public static function readableFilesize(int $size, int $decimals = 2): string
     {
         for ($i = 0; ($size / 1024) > 0.9; $i++, $size /= 1024) {}
@@ -174,14 +127,6 @@ class Formatter
     }
 
 
-    /**
-     * returns human readable number
-     * @param ?float $value
-     * @param int $decimals
-     * @param string $maxIndex
-     * @param string $suffix
-     * @return string
-     */
     public static function readableNumber(?float $value, int $decimals = 2, string $maxIndex = 'B', string $suffix = ''): string
     {
         $value = (float)$value;

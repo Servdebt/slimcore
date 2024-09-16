@@ -46,7 +46,7 @@ class QueryBuilder extends Builder
         $value = $this->formatNumerics($value);
 
         if (is_numeric($value) && (int)$value == (float)$value) {
-            $this->where($column, $operator, $value, strtolower($conditionType));
+            $this->where($column, $operator, (int)$value, strtolower($conditionType));
         }
 
         return $this;
@@ -59,7 +59,7 @@ class QueryBuilder extends Builder
         $value = $this->formatNumerics($value);
 
         if (is_numeric($value)) {
-            $this->where($column, $operator, $value, strtolower($conditionType));
+            $this->where($column, $operator, (float)$value, strtolower($conditionType));
         }
 
         return $this;
@@ -241,13 +241,12 @@ class QueryBuilder extends Builder
     }
 
 
-    private function formatNumerics($value): mixed
+    private function formatNumerics($value): string
     {
         $value = str_replace([' ', '€', '$', '%'], '', $value);
         $value = str_replace(',', '.', $value);
-        $value = preg_replace('/\.(?=.*\.)/', '', $value);
 
-        return $value;
+        return (string)preg_replace('/\.(?=.*\.)/', '', $value);
     }
 
 }

@@ -49,7 +49,7 @@ class Formatter
 
     public static function dateToTimeElapsed(?DateTime $datetime = null, bool $full = false): string
     {
-        if (is_null($datetime)) {
+        if (empty($datetime)) {
             return "";
         }
 

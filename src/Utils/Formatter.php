@@ -11,7 +11,7 @@ class Formatter
 
     public static function dateTime(DateTime|string|null $datetime = 'now', bool $showDate = true, bool $showTime = false, ?string $locale = null, mixed $timezone = null): string
     {
-        if (is_null($datetime)) {
+        if (empty($datetime)) {
             return "";
         }
         if (is_string($datetime)) {
@@ -30,7 +30,7 @@ class Formatter
 
     public static function dateFormat(DateTime|string|null $datetime = 'now', string $format = 'Y-m-d H:i', mixed $timezone = null): string
     {
-        if (is_null($datetime)) {
+        if (empty($datetime)) {
             return "";
         }
 
@@ -49,7 +49,7 @@ class Formatter
 
     public static function dateToTimeElapsed(?DateTime $datetime = null, bool $full = false): string
     {
-        if (is_null($datetime)) {
+        if (empty($datetime)) {
             return "";
         }
 

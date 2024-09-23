@@ -2,23 +2,29 @@
 
 namespace Servdebt\SlimCore\Utils;
 use LdapRecord\Connection;
+use LdapRecord\Query\Builder;
 
 class Ldap
 {
 
     /** @var Connection $ldapConn */
-	private Connection $ldapConn;
+    private Connection $ldapConn;
 
 
-	public function __construct($params)
-	{
+    public function __construct($params)
+    {
         $this->ldapConn = new Connection([
             'hosts'            => [$params['host']],
             'base_dn'          => $params['baseDn'],
             'username'         => $params['username'],
             'password'         => $params['password'],
         ]);
-	}
+    }
+
+    public function query(): Builder
+    {
+        return $this->ldapConn->query();
+    }
 
 
     public function getUser(string $username, array $memberOf = []) :?array

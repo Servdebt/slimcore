@@ -31,7 +31,6 @@ class Command
         echo "\033[{$color}{$question} \033[0m".PHP_EOL;
     }
 
-
     protected function log(string $string, bool $addLog = false, array $context = []): void
     {
         $this->output($string);
@@ -43,6 +42,12 @@ class Command
         if ($addLog) {
             addLog(LogLevel::ERROR, $string, $context);
         }
+    }
+
+    protected function outputMemoryUsage()
+    {
+        $memoryPeak = round(memory_get_peak_usage(true) / 1024 / 1024, 2);
+        $this->output("Memory usage peak: {$memoryPeak} MB", '93m');
     }
 
 }

@@ -175,9 +175,13 @@ class QueryBuilder extends Builder
     }
 
 
-    public static function getData(string $table, array $columns, array $conditions = [], string $groupResults = ''): array
+    public static function getData(string $table, string|array $columns, array $conditions = [], string $groupResults = ''): array
     {
-        $qb = (new self())->from($table)->selectRaw(implode(',',$columns));
+        if (is_string($columns)) $columns = explode(',', $columns);
+
+        $qb = (new self())->from($table)->selectRaw(
+            (array_search('distinct', $conditions, true) !== false ? 'distinct ' : '').implode(',',$columns)
+        );
 
         if (isset($conditions['join'])) {
             if (count($conditions['join']) == count($conditions['join'], COUNT_RECURSIVE)) {
@@ -201,24 +205,23 @@ class QueryBuilder extends Builder
             $qb->orderByRaw($conditions['order']);
         }
 
-        if(empty($groupResults)){
+        if (empty($groupResults)) {
             $res = $qb->pluck($columns[1] ?? $columns[0], $columns[0])->toArray();
             if (isset($conditions['empty']) && $conditions['empty']) {
                 $res = ['' => ''] + $res;
             }
-        }
-        else{
+        } else{
             $res = [];
             $rows = $qb->get();
             //remove alias table
             $fieldNameID = explode('.',$columns[0]);
-            $fieldNameValue = explode('.',$columns[1]);
-            if(is_string($groupResults)) {
+            $fieldNameValue = explode('.', $columns[1] ?? $columns[0]);
+            if (is_string($groupResults)) {
                 foreach ($rows as $row) {
                     if (!isset($res[$row->{$groupResults}])) {
                         $res[$row->{$groupResults}] = [];
                     }
-                    $res[$row->{$groupResults} ?? ''][$row->{$fieldNameID[1]}] = $row->{$fieldNameValue[1]};
+                    $res[$row->{$groupResults} ?? ''][$row->{($fieldNameID[1] ?? $fieldNameID[0])}] = $row->{($fieldNameValue[1] ?? $fieldNameValue[0])};
                 }
             }
         }

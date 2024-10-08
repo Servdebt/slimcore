@@ -178,7 +178,10 @@ class QueryBuilder extends Builder
     public static function getData(string $table, string|array $columns, array $conditions = [], string $groupResults = ''): array
     {
         if (is_string($columns)) $columns = explode(',', $columns);
-        $qb = (new self())->from($table)->selectRaw(implode(',',$columns));
+
+        $qb = (new self())->from($table)->selectRaw(
+            (array_search('distinct', $conditions, true) !== false ? 'distinct ' : '').implode(',',$columns)
+        );
 
         if (isset($conditions['join'])) {
             if (count($conditions['join']) == count($conditions['join'], COUNT_RECURSIVE)) {
@@ -188,10 +191,6 @@ class QueryBuilder extends Builder
                     $qb->join($join['table'], $join['first'], $join['operator'], $join['second'], $join['type']);
                 }
             }
-        }
-
-        if (isset($conditions['distinct'])) {
-            $qb->distinct();
         }
 
         if (isset($conditions['where'])) {

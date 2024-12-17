@@ -5,41 +5,32 @@ namespace Servdebt\SlimCore\Utils;
 class Session
 {
 
-    /**
-     * @param array $settings
-     */
     public static function start(array $settings = [])
     {
-        $defaults = [
-            'name' => 'app',
-            'lifetime' => time()+3600,
-            'path' => '/',
-            'domain' => '',
-            'secure' => false,
-            'httponly' => false,
-        ];
-        $settings = array_merge($defaults, $settings);
-        if (isset($settings['lifetime']) ) {
-            $settings['lifetime'] = time() + (int)$settings['lifetime'];
+        if (isset($settings['name'])) {
+            session_name($settings['name']);
         }
-
-        if (!empty($settings['filesPath']) && !is_dir($settings['filesPath'])) {
-            mkdir($settings['filesPath'], 0777, true);
+        if (isset($settings['save_handler'])) {
+            ini_set('session.save_handler', $settings['save_handler'] ?? 'files');
         }
+        if (isset($settings['save_path']) || isset($settings['filesPath'])) {
+            session_save_path($settings['save_path'] ?? $settings['filesPath']);
 
-        session_save_path($settings['filesPath']);
-        session_name($settings['name']);
+            if (ini_get('session.save_handler') == 'files' && !is_dir(ini_get('session.save_path'))) {
+                mkdir(ini_get('session.save_path'), 0777, true);
+            }
+        }
         session_start();
 
         if (ini_get("session.use_cookies")) {
             setcookie(
-                session_name(),
+                $settings['name'] ?? 'app',
                 session_id(),
-                $settings['lifetime'] ?? 0,
-                $settings['path'] ?? '',
+                time() + ($settings['lifetime'] ?: 3600),
+                $settings['path'] ?? '/',
                 $settings['domain'] ?? '',
                 $settings['secure'] ?? false,
-                $settings['httponly'] ?? false
+                $settings['httponly'] ?? false,
             );
         }
     }

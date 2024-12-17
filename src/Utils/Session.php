@@ -10,6 +10,9 @@ class Session
         if (isset($settings['name'])) {
             session_name($settings['name']);
         }
+        if (isset($settings['lifetime'])) {
+            ini_set('session.gc_maxlifetime', $settings['lifetime']);
+        }
         if (isset($settings['save_handler'])) {
             ini_set('session.save_handler', $settings['save_handler'] ?? 'files');
         }

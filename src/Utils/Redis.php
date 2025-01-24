@@ -19,7 +19,7 @@ class Redis
     }
 
 
-    public function get(string $key, $default = null, bool $uncompressData = true): mixed
+    public function get(string $key, mixed $default = null, bool $uncompressData = true): mixed
     {
         $item = $this->client->get($this->canonicalize($key));
         $item = $uncompressData ? $this->uncompress($item) : $item;
@@ -33,7 +33,7 @@ class Redis
     }
 
 
-    public function set(string $key, $value, $ttl = null, bool $compressData = true): bool
+    public function set(string $key, mixed $value, ?int $ttl = null, bool $compressData = true): bool
     {
         $value = $compressData ? $this->compress($value) : $value;
         $key = $this->canonicalize($key);
@@ -71,7 +71,7 @@ class Redis
     }
 
 
-    public function getMultiple($keys, $default = null, bool $uncompressData = true): array
+    public function getMultiple(Traversable|array $keys, mixed $default = null, bool $uncompressData = true): array
     {
         if (!is_array($keys) && !$keys instanceof Traversable) {
             throw new \Exception("Keys must be an array or a \\Traversable instance.");
@@ -88,7 +88,7 @@ class Redis
     }
 
 
-    public function setMultiple($values, $ttl = null, bool $compressData = true): bool
+    public function setMultiple(Traversable|array $values, $ttl = null, bool $compressData = true): bool
     {
         if (!is_array($values) && !$values instanceof Traversable) {
             throw new \Exception("Values must be an array or a \\Traversable instance.");
@@ -113,7 +113,7 @@ class Redis
     }
 
 
-    public function deleteMultiple($keys): bool
+    public function deleteMultiple(Traversable|array $keys): bool
     {
         if (!is_array($keys) && !$keys instanceof Traversable) {
             throw new \Exception("Keys must be an array or a \\Traversable instance.");
@@ -136,7 +136,7 @@ class Redis
     }
 
 
-    public function has($key): bool
+    public function has(string $key): bool
     {
         if (!is_string($key)) {
             throw new \Exception("Provided key is not a legal string.");
@@ -148,7 +148,7 @@ class Redis
 
     /* Queues */
 
-    public function enqueue($queue, $values, bool $compressData = true): int
+    public function enqueue(string $queue, $values, bool $compressData = true): int
     {
         if (!is_array($values)) $values = [$values];
 
@@ -162,7 +162,7 @@ class Redis
     }
 
 
-    public function dequeue($queue, bool $uncompressData = true): mixed
+    public function dequeue(string $queue, bool $uncompressData = true): mixed
     {
         $var = $this->client->lpop($this->canonicalize($queue));
         $this->redisReads++;
@@ -173,15 +173,12 @@ class Redis
 
     public function dequeueWait($queue, $timeout = 30, bool $uncompressData = true): mixed
     {
-        $var = null;
-
-        while (1) {
+        do {
             $var = $this->client->blpop($this->canonicalize($queue), $timeout);
+            if (empty($var)) $this->client->ping();
             $this->redisReads++;
 
-            if ($var != null) break;
-            $this->client->ping();
-        }
+        } while ($var != null);
 
         return $uncompressData ? $this->uncompress($var[1]) : $var[1];
     }
@@ -253,18 +250,14 @@ LUA;
     /* Utils */
 
 
-    private function compress($value): string|false
+    private function compress(mixed $value): string|false
     {
-        $value = serialize($value);
-
-        return strlen($value) == 0 ? $value : gzcompress($value);
+        return serialize($value);
     }
 
 
     private function uncompress($value): mixed
     {
-        $value = strlen((string)$value) == 0 ? $value : gzuncompress($value);
-
         return unserialize((string)$value);
     }
 

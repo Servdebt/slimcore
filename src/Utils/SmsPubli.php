@@ -29,7 +29,7 @@ class SmsPubli
         return $this;
     }
 
-    public function sendSms(int|string $countryCode, int|string $destination, string $message, ?string $sendAt = null) : object
+    public function sendSms(int|string $countryCode, int|string $destination, string $message, ?string $sendAt = null, int|string $custom = '') : object
     {
         preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $message, $urls);
         $link = '';
@@ -51,6 +51,7 @@ class SmsPubli
                     "to"      => $countryCode.$destination,
                     "text"    => $message,
                     "send_at" => $sendAt ?? date("Y-m-d H:i:s"),
+                    "custom"  => (string)$custom,
                 ]
             ]
         ]);

@@ -66,34 +66,29 @@ class QueryBuilder extends Builder
     }
 
 
-    public function compareDate($column, $startDate = null, $endDate = null, string $conditionType = 'and'): self
+    public function compareDate($column, $startDate = null, $endDate = null, string $conditionType = 'and', $minYear = 1900): self
     {
         if (isset($startDate) && strlen($startDate) > 0) {
 
             $operator = $this->extractOperator($startDate);
-
             $endDate = $endDate !== null && strlen($endDate) > 0 ? $endDate : $startDate;
 
-            $datetimeFormatIni = '0000-01-01 00:00:00';
-            if (strlen($endDate) < 10) {
-                $datetimeFormatEnd = date("Y-".(strlen($endDate) < 7 ? "12" : "m")."-t 23:59:59", strtotime($endDate));
-            }
-            else {
-                $datetimeFormatEnd = '0000-12-31 23:59:59';
+            try {
+                $dtStart = new \DateTime($startDate . substr("{$minYear}-01-01 00:00:00", strlen($startDate), 19));
+                $dtEnd = (new \DateTime($endDate . substr("{$minYear}-12-01 23:59:59", strlen($endDate), 19)));
+                if (strlen($endDate) < 8) $dtEnd->modify('last day of this month');
+
+            } catch (\Exception $e) {
+                $dtStart = $dtEnd = new \DateTime("{$minYear}-01-01 00:00:00");
             }
 
-            $startDate = \DateTime::createFromFormat('Y-m-d H:i:s', $startDate.substr($datetimeFormatIni, strlen($startDate), strlen($datetimeFormatIni)));
-            $endDate = \DateTime::createFromFormat('Y-m-d H:i:s', $endDate.substr($datetimeFormatEnd, strlen($endDate), strlen($datetimeFormatEnd)));
+            if ($dtStart->format('Y') < $minYear) $dtStart->setDate($minYear, $dtStart->format('m'), $dtStart->format('d'));
+            if ($dtEnd->format('Y') < $minYear) $dtEnd->setDate($minYear, $dtEnd->format('m'), $dtEnd->format('d'));
 
             if ($operator != "=") {
-                $this->where($column, $operator, $startDate->format('Y-m-d H:i:s'), strtolower($conditionType));
-            }
-
-            if ($startDate !== false && $endDate !== false) {
-                $this->whereBetween($column, [
-                    $startDate->format('Y-m-d H:i:s'),
-                    $endDate->format('Y-m-d H:i:s')
-                ], strtolower($conditionType));
+                $this->where($column, $operator, $dtStart->format('Y-m-d H:i:s'), strtolower($conditionType));
+            } else {
+                $this->whereBetween($column, [$dtStart->format('Y-m-d H:i:s'), $dtEnd->format('Y-m-d H:i:s')], strtolower($conditionType));
             }
         }
 

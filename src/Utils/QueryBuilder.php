@@ -66,7 +66,7 @@ class QueryBuilder extends Builder
     }
 
 
-    public function compareDate($column, $startDate = null, $endDate = null, string $conditionType = 'and', $minYear = 1900): self
+    public function compareDate($column, $startDate = null, $endDate = null, string $conditionType = 'and', int $minYear = 1900): self
     {
         if (isset($startDate) && strlen($startDate) > 0) {
 

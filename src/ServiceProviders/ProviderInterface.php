@@ -6,5 +6,5 @@ use Servdebt\SlimCore\App;
 
 interface ProviderInterface
 {
-    public static function register(App $app, string $serviceName, array $settings = []);
+    public static function register(App $app, string $serviceName, array $settings = []): void;
 }

@@ -9,7 +9,7 @@ use Servdebt\SlimCore\App;
 class MongoDb implements ProviderInterface
 {
 
-    public static function register(App $app, $serviceName, array $settings = [])
+    public static function register(App $app, $serviceName, array $settings = []): void
     {
         $conn = new Client($settings["uri"], $settings["options"]);
 

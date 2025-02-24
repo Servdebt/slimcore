@@ -8,7 +8,7 @@ use Predis\Client;
 class Redis implements ProviderInterface
 {
 
-    public static function register(App $app, $serviceName, array $settings = [])
+    public static function register(App $app, $serviceName, array $settings = []): void
     {
         $redis = new RedisClient(new Client($settings));
 

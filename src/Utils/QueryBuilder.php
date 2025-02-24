@@ -164,7 +164,7 @@ class QueryBuilder extends Builder
     }
 
 
-    public function columnsToArray($valueField, $keyField = null): array
+    public function columnsToArray(int|null|string $valueField, int|null|string $keyField = null): array
     {
         return array_column($this->toArray(), $valueField, $keyField);
     }
@@ -239,7 +239,7 @@ class QueryBuilder extends Builder
     }
 
 
-    private function formatNumerics($value): string
+    private function formatNumerics(string $value): string
     {
         $value = str_replace([' ', '€', '$', '%'], '', $value);
         $value = str_replace(',', '.', $value);

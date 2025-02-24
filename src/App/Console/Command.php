@@ -44,7 +44,7 @@ class Command
         }
     }
 
-    protected function outputMemoryUsage()
+    protected function outputMemoryUsage(): void
     {
         $memoryPeak = round(memory_get_peak_usage(true) / 1024 / 1024, 2);
         $this->output("Memory usage peak: {$memoryPeak} MB", '93m');

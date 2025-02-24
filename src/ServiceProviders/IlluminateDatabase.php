@@ -8,7 +8,7 @@ use Servdebt\SlimCore\App;
 class IlluminateDatabase implements ProviderInterface
 {
 
-    public static function register(App $app, $serviceName, array $settings = [])
+    public static function register(App $app, $serviceName, array $settings = []): void
     {
         if ($app->has('capsule')) {
             $capsule = $app->capsule;

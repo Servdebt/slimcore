@@ -8,7 +8,7 @@ use Servdebt\SlimCore\App;
 class Mailer implements ProviderInterface
 {
 
-    public static function register(App $app, $serviceName, array $settings = [])
+    public static function register(App $app, $serviceName, array $settings = []): void
     {
         $app->registerInContainer($serviceName, function($configsOverride = []) use ($settings) {
             $configs = array_merge($settings, $configsOverride);

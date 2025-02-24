@@ -8,9 +8,9 @@ use League\MimeTypeDetection\MimeTypeDetector;
 
 class AsyncAwsS3Adapter extends \League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter
 {
-    protected $client;
-    protected $bucket;
-    protected $prefix;
+    protected S3Client $client;
+    protected string $bucket;
+    protected string $prefix;
 
     public const AVAILABLE_OPTIONS = [
         'ACL',
@@ -49,7 +49,7 @@ class AsyncAwsS3Adapter extends \League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter
     /**
      * * Important to validade if construct changes during package upgrades.
      *
-     * @param S3Client|SimpleS3Client $client
+     * @param S3Client $client
      */
     public function __construct(
         S3Client $client,

@@ -4,8 +4,8 @@ namespace Servdebt\SlimCore\Utils;
 class Logger
 {
 
-    public $startTime;
-    private $entries = [];
+    public string|float $startTime;
+    private array $entries = [];
 
     /**
      * Private constructor so nobody else can instantiate it
@@ -22,7 +22,7 @@ class Logger
      * @param mixed $message
      * @return Logger
      */
-    public function add($message): Logger
+    public function add(mixed $message): Logger
     {
         if (is_object($message) || is_array($message)) {
             $message = json_encode($message);
@@ -73,7 +73,7 @@ class Logger
     /**
      * clear logs
      */
-    public function clear()
+    public function clear(): void
     {
         $this->startTime = microtime(true);
         $this->entries = [];

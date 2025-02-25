@@ -17,7 +17,7 @@ use Psr\Container\ContainerInterface;
 class Monolog implements ProviderInterface
 {
 
-    public static function register(App $app, $serviceName, array $settings = [])
+    public static function register(App $app, $serviceName, array $settings = []): void
     {
         $monolog = new Logger($serviceName);
 

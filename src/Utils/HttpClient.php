@@ -16,7 +16,7 @@ class HttpClient
 
 
     public static function request(string $method, string $url, object|array $urlParams = [],
-                                   array $headers = [], array $options = [], mixed $data = [])
+                                   array $headers = [], array $options = [], mixed $data = []): object
     {
         if (!empty($urlParams)) {
             $url .= '?'.http_build_query($urlParams);

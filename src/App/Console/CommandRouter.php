@@ -13,7 +13,7 @@ class CommandRouter
         $this->app = $app;
     }
 
-    public function execute($argv, ?array $environments = null)
+    public function execute($argv, ?array $environments = null): mixed
     {
         ob_start();
         set_time_limit(0);
@@ -82,15 +82,16 @@ class CommandRouter
     }
 
 
-    private function tryResolveRoute($namespace, $class, $method, $params)
+    private function tryResolveRoute($namespace, $class, $method, $params): mixed
     {
         try {
             return $this->app->resolveRoute([$namespace.'\\'.$class, $method], $params);
-        } catch (\Slim\Exception\HttpNotFoundException  $exception) {
-            return false;
         } catch (\ReflectionException $exception) {
             $this->app->notFound();
+        } catch (\Slim\Exception\HttpNotFoundException  $exception) {
         }
+
+        return false;
     }
 
 }

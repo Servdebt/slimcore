@@ -19,7 +19,7 @@ class Filesystem extends \League\Flysystem\Filesystem
         $this->adapter = $adapter;
     }
     
-    public function bulkDelete(array $files)
+    public function bulkDelete(array $files): bool
     {
         
         if(!method_exists($this->adapter, 'bulkDelete')){

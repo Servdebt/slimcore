@@ -19,7 +19,7 @@ class Container implements ContainerInterface
      *
      * @return self
      */
-    public function withAutoWiring()
+    public function withAutoWiring(): static
     {
         $this->autoWiring = true;
 
@@ -35,7 +35,7 @@ class Container implements ContainerInterface
      *
      * @return self
      */
-    public function set(string $id, $value)
+    public function set(string $id, mixed $value): static
     {
         $this->container[$id] = $value;
 
@@ -53,7 +53,7 @@ class Container implements ContainerInterface
      *
      * @throws NotFoundExceptionInterface  No entry was found for this identifier.
      */
-    public function get(string $id)
+    public function get(string $id): mixed
     {
         if (isset($this->alias[$id])) {
             $id = $this->alias[$id];
@@ -124,7 +124,7 @@ class Container implements ContainerInterface
      * @param \ReflectionMethod $method
      * @return array
      */
-    private function resolveMethodDependencies(\ReflectionMethod $method)
+    private function resolveMethodDependencies(\ReflectionMethod $method): array
     {
         return array_map(function($dependency) {
             return $this->resolveDependency($dependency);
@@ -140,7 +140,7 @@ class Container implements ContainerInterface
      *
      * @throws \ReflectionException
      */
-    private function resolveDependency(\ReflectionParameter $param)
+    private function resolveDependency(\ReflectionParameter $param): mixed
     {
         // param is instantiable
         if ($param->isDefaultValueAvailable()) {

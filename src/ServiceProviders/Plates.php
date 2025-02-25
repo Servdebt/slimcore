@@ -7,7 +7,7 @@ use Servdebt\SlimCore\App;
 
 class Plates implements ProviderInterface
 {
-    public static function register(App $app, $serviceName, array $settings = [])
+    public static function register(App $app, $serviceName, array $settings = []): void
     {
         $engine = new Engine();
         foreach ($settings['templates'] as $name => $path) {

@@ -6,10 +6,10 @@ use Symfony\Component\Process\Process;
 class Ffmpeg
 {
 
-    private $ffmpegPath;
-    private $ffprobePath;
+    private string $ffmpegPath;
+    private string $ffprobePath;
 
-    public $error = "";
+    public string $error = "";
 
 
     public function setFfmpegPath(string $path) : self

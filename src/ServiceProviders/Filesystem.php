@@ -14,7 +14,7 @@ use AsyncAws\SimpleS3\SimpleS3Client;
 
 class Filesystem implements ProviderInterface
 {
-    public static function register(App $app, string $serviceName, array $settings = [])
+    public static function register(App $app, string $serviceName, array $settings = []): void
     {
         $app->registerInContainer($serviceName, function($configsOverride = []) use ($settings) {
             $configs = array_merge($settings, $configsOverride);
@@ -35,14 +35,14 @@ class Filesystem implements ProviderInterface
         });
     }
 
-    public static function createLocal($configs)
+    public static function createLocal($configs): ExtendedFilesystem
     {
         $adapter = new LocalFilesystemAdapter($configs['root']);
 
         return new ExtendedFilesystem($adapter, [], null);
     }
 
-    public static function createFtp($configs)
+    public static function createFtp($configs): ExtendedFilesystem
     {
         $ftpOptions = FtpConnectionOptions::fromArray($configs);
         $adapter = new FtpAdapter($ftpOptions);
@@ -50,7 +50,7 @@ class Filesystem implements ProviderInterface
         return new ExtendedFilesystem($adapter, [], null);
     }
 
-    public static function createSftp($configs)
+    public static function createSftp($configs): ExtendedFilesystem
     {
         $adapter = new SftpAdapter(
             new SftpConnectionProvider(
@@ -70,7 +70,7 @@ class Filesystem implements ProviderInterface
         return new ExtendedFilesystem($adapter, [], null);
     }
 
-    public static function createS3Async($settings)
+    public static function createS3Async($settings): ExtendedFilesystem
     {
         $client = new SimpleS3Client([
             'endpoint'          => $settings['endpoint'],

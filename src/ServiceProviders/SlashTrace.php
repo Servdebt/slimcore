@@ -8,7 +8,7 @@ use SlashTrace\EventHandler\DebugHandler;
 class SlashTrace implements ProviderInterface
 {
 
-	public static function register(App $app, string $serviceName, array $settings = [])
+	public static function register(App $app, string $serviceName, array $settings = []): void
 	{
 	    $st = new ST();
         $st->addHandler(new DebugHandler());

@@ -24,7 +24,7 @@ class DotNotation
 	/**
 	 * @var array
 	 */
-	protected $values = array();
+	protected array $values = array();
 
 	/**
 	 * @var array
@@ -39,7 +39,7 @@ class DotNotation
 	 * @param string $default
 	 * @return mixed
 	 */
-	public function get($path, $default = null)
+	public function get(string $path, mixed $default = null)
 	{
 		$array = $this->values;
 		if (!empty($path)) {
@@ -59,8 +59,8 @@ class DotNotation
 	 * @param string $path
 	 * @param mixed $value
 	 */
-	public function set($path, $value)
-	{
+	public function set(string $path, mixed $value): void
+    {
 		if (!empty($path)) {
 			$at = & $this->values;
 			$keys = $this->explode($path);
@@ -85,11 +85,11 @@ class DotNotation
 	}
 
 	/**
-	 * @param $path
+	 * @param string $path
 	 * @param array $values
 	 */
-	public function add($path, array $values)
-	{
+	public function add(string $path, array $values): void
+    {
 		$get = (array)$this->get($path);
 		$this->set($path, $this->arrayMergeRecursiveDistinct($get, $values));
 	}
@@ -98,7 +98,7 @@ class DotNotation
 	 * @param string $path
 	 * @return bool
 	 */
-	public function have($path)
+	public function has(string $path): bool
 	{
 		$keys = $this->explode($path);
 		$array = $this->values;
@@ -115,7 +115,7 @@ class DotNotation
 	/**
 	 * @param array $values
 	 */
-	public function setValues($values)
+	public function setValues(array $values): void
 	{
 		$this->values = $values;
 	}
@@ -123,8 +123,8 @@ class DotNotation
 	/**
 	 * @return array
 	 */
-	public function getValues()
-	{
+	public function getValues(): array
+    {
 		return $this->values;
 	}
 
@@ -132,8 +132,8 @@ class DotNotation
 	 * @param string $path
      * @return mixed
 	 */
-	protected function explode($path)
-	{
+	protected function explode(string $path): mixed
+    {
 		return preg_split(self::SEPARATOR, $path);
 	}
 
@@ -167,8 +167,8 @@ class DotNotation
 	 * @author Gabriel Sobrinho <gabriel (dot) sobrinho (at) gmail (dot) com>
 	 * @author Anton Medvedev <anton (at) elfet (dot) ru>
 	 */
-	protected function arrayMergeRecursiveDistinct(array &$array1, array &$array2)
-	{
+	protected function arrayMergeRecursiveDistinct(array &$array1, array &$array2): array
+    {
 		$merged = $array1;
 		foreach ($array2 as $key => &$value) {
 			if (is_array($value) && isset ($merged[$key]) && is_array($merged[$key])) {

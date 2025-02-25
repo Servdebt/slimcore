@@ -8,7 +8,7 @@ use Slim\Psr7\Response;
 
 class TrailingSlash extends Middleware
 {
-    
+
     public function process(Request $request, RequestHandler $handler): ResponseInterface
     {
         $uri = $request->getUri();
@@ -23,18 +23,10 @@ class TrailingSlash extends Middleware
             // to their non-trailing counterpart
             $uri = $uri->withPath($path);
 
-            /*
-            if ($request->getMethod() === 'GET') {
-                $response = new Response();
-                return $response
-                    ->withHeader('Location', (string)$uri)
-                    ->withStatus(301);
-            }*/
-
             $request = $request->withUri($uri);
         }
 
         return $handler->handle($request);
     }
-    
+
 }

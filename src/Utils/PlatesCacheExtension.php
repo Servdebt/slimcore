@@ -8,13 +8,13 @@ class PlatesCacheExtension implements ExtensionInterface {
     public ?int $cacheKeyTtl;
     public ?Redis $redis = null;
 
-    public function register(\League\Plates\Engine $engine)
+    public function register(\League\Plates\Engine $engine): void
     {
         $engine->registerFunction('startCache', [$this, 'startCache']);
         $engine->registerFunction('endCache', [$this, 'endCache']);
     }
 
-    public function startCache(string $cacheKey, ?int $cacheKeyTtl = null)
+    public function startCache(string $cacheKey, ?int $cacheKeyTtl = null): bool
     {
         $this->cacheKey = $cacheKey;
         $this->cacheKeyTtl = $cacheKeyTtl;
@@ -30,7 +30,7 @@ class PlatesCacheExtension implements ExtensionInterface {
         return true;
     }
 
-    public function endCache()
+    public function endCache(): void
     {
         $content = ob_get_contents();
         $this->redis?->set($this->cacheKey, $content, $this->cacheKeyTtl);

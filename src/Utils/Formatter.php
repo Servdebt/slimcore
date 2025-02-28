@@ -139,4 +139,10 @@ class Formatter
         return self::decimal($value, $decimals)." ".$readable[$index] . $suffix;
     }
 
+
+    public static function iban($value, $separator=' '): string
+    {
+        return chunk_split($value ?? "", 4, $separator);
+    }
+
 }

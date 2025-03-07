@@ -5,17 +5,16 @@ namespace Servdebt\SlimCore\Utils;
 class Session
 {
 
-    public static function start(array $settings = [])
+    public static function start(array $settings = []): void
     {
-        if (isset($settings['name'])) {
-            session_name($settings['name']);
-        }
-        if (isset($settings['lifetime'])) {
-            ini_set('session.gc_maxlifetime', $settings['lifetime']);
-        }
-        if (isset($settings['save_handler'])) {
-            ini_set('session.save_handler', $settings['save_handler'] ?? 'files');
-        }
+        if (!array_key_exists('name', $settings)) $settings['name'] = 'app';
+        if (!array_key_exists('lifetime', $settings)) $settings['lifetime'] = 3600;
+        if (!array_key_exists('save_handler', $settings)) $settings['save_handler'] = 'files';
+
+        session_name($settings['name']);
+        ini_set('session.gc_maxlifetime', $settings['lifetime']);
+        ini_set('session.save_handler', $settings['save_handler'] ?? 'files');
+
         if (isset($settings['save_path']) || isset($settings['filesPath'])) {
             session_save_path($settings['save_path'] ?? $settings['filesPath']);
 
@@ -27,9 +26,9 @@ class Session
 
         if (ini_get("session.use_cookies")) {
             setcookie(
-                $settings['name'] ?? 'app',
+                $settings['name'],
                 session_id(),
-                time() + ($settings['lifetime'] ?: 3600),
+                time() + $settings['lifetime'],
                 $settings['path'] ?? '/',
                 $settings['domain'] ?? '',
                 $settings['secure'] ?? false,
@@ -41,10 +40,6 @@ class Session
 
     /**
      * Get one session var
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
      */
     public static function get(string $key, mixed $default = null): mixed
     {
@@ -57,10 +52,6 @@ class Session
 
     /**
      * Set one session var
-     *
-     * @param mixed $key
-     * @param mixed $value
-     * @return void
      */
     public static function set(string $key, mixed $value): void
     {
@@ -69,9 +60,6 @@ class Session
 
     /**
      * Delete one session var by key
-     *
-     * @param string $key
-     * @return void
      */
     public static function delete(string $key): void
     {
@@ -82,8 +70,6 @@ class Session
 
     /**
      * Clear all session vars
-     *
-     * @return void
      */
     public static function clearAll(): void
     {
@@ -92,8 +78,6 @@ class Session
 
     /**
      * Regenerate current session id
-     *
-     * @return void
      */
     public static function regenerate(): void
     {
@@ -104,8 +88,6 @@ class Session
 
     /**
      * Destroy current session and delete session cookie
-     *
-     * @return bool
      */
     public static function destroy(): bool
     {

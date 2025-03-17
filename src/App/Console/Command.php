@@ -7,6 +7,7 @@ class Command
 {
     public ?string $logFilePath = null;
 
+    public function __construct() {}
 
     protected function ask($question, $color = '92m'): string|false
     {

@@ -1,7 +1,6 @@
 <?php
 
 namespace Servdebt\SlimCore\ServiceProviders;
-
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Servdebt\SlimCore\App;
 

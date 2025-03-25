@@ -1,7 +1,6 @@
 <?php
 
 namespace Servdebt\SlimCore\Container;
-
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -12,7 +11,6 @@ class Container implements ContainerInterface
     private array $container = [];
     private array $alias = [];
     private bool $autoWiring = false;
-
 
     /**
      * set auto wiring
@@ -25,7 +23,6 @@ class Container implements ContainerInterface
 
         return $this;
     }
-
 
     /**
      * Adds to the container
@@ -41,7 +38,6 @@ class Container implements ContainerInterface
 
         return $this;
     }
-
 
     /**
      * Finds an entry of the container by its identifier and returns it.
@@ -82,7 +78,6 @@ class Container implements ContainerInterface
         return $this->container[$id];
     }
 
-
     /**
      * Returns true if the container can return an entry for the given identifier.
      * Returns false otherwise.
@@ -99,7 +94,6 @@ class Container implements ContainerInterface
 
         return isset($this->container[$id]);
     }
-
 
     /**
      * alias
@@ -123,6 +117,7 @@ class Container implements ContainerInterface
      *
      * @param \ReflectionMethod $method
      * @return array
+     * @throws \ReflectionException
      */
     private function resolveMethodDependencies(\ReflectionMethod $method): array
     {
@@ -130,7 +125,6 @@ class Container implements ContainerInterface
             return $this->resolveDependency($dependency);
         }, $method->getParameters());
     }
-
 
     /**
      * resolve a dependency parameter

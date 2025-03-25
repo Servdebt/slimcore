@@ -6,13 +6,13 @@ use WpOrg\Requests\Requests;
 class HttpClient
 {
 
-    const GET     = 'GET';
-    const PUT     = 'PUT';
-    const POST    = 'POST';
-    const PATCH   = 'PATCH';
-    const DELETE  = 'DELETE';
-    const HEAD    = 'HEAD';
-    const OPTIONS = 'OPTIONS';
+    const string GET     = 'GET';
+    const string PUT     = 'PUT';
+    const string POST    = 'POST';
+    const string PATCH   = 'PATCH';
+    const string DELETE  = 'DELETE';
+    const string HEAD    = 'HEAD';
+    const string OPTIONS = 'OPTIONS';
 
 
     public static function request(string $method, string $url, object|array $urlParams = [],

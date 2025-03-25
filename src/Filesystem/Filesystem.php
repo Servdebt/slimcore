@@ -1,7 +1,6 @@
 <?php
 
 namespace Servdebt\SlimCore\Filesystem;
-
 use League\Flysystem\PathNormalizer;
 use League\Flysystem\FilesystemAdapter;
 

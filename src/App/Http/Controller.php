@@ -11,9 +11,7 @@ class Controller
 {
     public Request $request;
     public Response $response;
-
     public DotNotation $postParams;
-
 
     public function __construct(Request $request, Response $response)
     {
@@ -22,6 +20,25 @@ class Controller
         $this->postParams = new DotNotation((array)($request->getParsedBody() ?? []));
     }
 
+    public function isAjax()
+    {
+        return strtolower($this->request->getHeaderLine('X-Requested-With')) == strtolower('XMLHttpRequest');
+    }
+
+    public function isPost()
+    {
+        return strtolower($this->request->getMethod()) == 'post';
+    }
+
+    public function isGet()
+    {
+        return strtolower($this->request->getMethod()) == 'get';
+    }
+
+    public function getQueryParams(): array
+    {
+        return $this->request->getQueryParams();
+    }
 
     public function getQueryParam($paramName, $defaultValue = null)
     {
@@ -30,36 +47,20 @@ class Controller
         return $params[$paramName] ?? $defaultValue;
     }
 
-
-    public function isAjax()
-    {
-        return strtolower($this->request->getHeaderLine('X-Requested-With')) == strtolower('XMLHttpRequest');
-    }
-
-
-    public function isPost()
-    {
-        return strtolower($this->request->getMethod()) == 'post';
-    }
-
-
     public function getPostParam($paramName, $defaultValue = null): mixed
     {
         return $this->postParams->get($paramName, $defaultValue);
     }
-
 
     public function getPostParams(): array
     {
         return $this->postParams->getValues();
     }
 
-
     public function setFlashMessage($key, $value): void
     {
         Session::set("flash-message-$key", json_encode($value));
     }
-
 
     public function getFlashMessage($key, $defaultValue): mixed
     {

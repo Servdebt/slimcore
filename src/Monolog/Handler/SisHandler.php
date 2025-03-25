@@ -1,6 +1,5 @@
 <?php
 namespace Servdebt\SlimCore\Monolog\Handler;
-
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Level;
 use Monolog\LogRecord;

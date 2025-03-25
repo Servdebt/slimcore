@@ -1,7 +1,6 @@
 <?php
 
 namespace Servdebt\SlimCore\ServiceProviders;
-
 use MongoDB\Client;
 use SequelMongo\QueryBuilder;
 use Servdebt\SlimCore\App;

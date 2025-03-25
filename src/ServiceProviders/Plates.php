@@ -1,7 +1,6 @@
 <?php
 
 namespace Servdebt\SlimCore\ServiceProviders;
-
 use League\Plates\Engine;
 use Servdebt\SlimCore\App;
 

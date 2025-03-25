@@ -1,12 +1,8 @@
 <?php
 namespace Servdebt\SlimCore\Monolog\Handler;
-
-use Exception;
-use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Level;
 use Monolog\LogRecord;
-use Monolog\Logger;
 
 class TelegramHandler extends AbstractProcessingHandler
 {
@@ -19,7 +15,7 @@ class TelegramHandler extends AbstractProcessingHandler
      */
     protected array $curlOptions;
 
-    const host = 'https://api.telegram.org/bot';
+    const string host = 'https://api.telegram.org/bot';
 
     /**
      * getting token a channel name from Telegram Handler Object.
@@ -38,7 +34,6 @@ class TelegramHandler extends AbstractProcessingHandler
         $this->dateFormat   = 'Y-m-d H:i:s';
         $this->curlOptions  = [];
     }
-
 
     public function write(array|LogRecord $record): void
     {
@@ -69,7 +64,6 @@ class TelegramHandler extends AbstractProcessingHandler
         } catch (\Exception $e) {}
     }
 
-
     protected function emojiMap(): array
     {
         return [
@@ -83,7 +77,6 @@ class TelegramHandler extends AbstractProcessingHandler
             600 => '🚨',
         ];
     }
-
 
     protected function getEmoji(int $level): string
     {

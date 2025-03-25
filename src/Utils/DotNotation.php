@@ -19,7 +19,7 @@ namespace Servdebt\SlimCore\Utils;
  */
 class DotNotation
 {
-	const SEPARATOR = '/[:\.]/';
+	const string SEPARATOR = '/[:\.]/';
 
 	/**
 	 * @var array
@@ -39,8 +39,8 @@ class DotNotation
 	 * @param string $default
 	 * @return mixed
 	 */
-	public function get(string $path, mixed $default = null)
-	{
+	public function get(string $path, mixed $default = null): mixed
+    {
 		$array = $this->values;
 		if (!empty($path)) {
 			$keys = $this->explode($path);
@@ -130,9 +130,9 @@ class DotNotation
 
 	/**
 	 * @param string $path
-     * @return mixed
-	 */
-	protected function explode(string $path): mixed
+     * @return array|false
+     */
+	protected function explode(string $path): array|false
     {
 		return preg_split(self::SEPARATOR, $path);
 	}

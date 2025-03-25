@@ -1,7 +1,6 @@
 <?php
 
 namespace Servdebt\SlimCore\ServiceProviders;
-
 use PHPMailer\PHPMailer\PHPMailer;
 use Servdebt\SlimCore\App;
 

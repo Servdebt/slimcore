@@ -1,7 +1,6 @@
 <?php
 
 namespace Servdebt\SlimCore\Middleware;
-
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface as Request};
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 

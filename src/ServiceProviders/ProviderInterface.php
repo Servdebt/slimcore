@@ -1,7 +1,6 @@
 <?php
 
 namespace Servdebt\SlimCore\ServiceProviders;
-
 use Servdebt\SlimCore\App;
 
 interface ProviderInterface

@@ -1,7 +1,6 @@
 <?php
 
 namespace Servdebt\SlimCore\App\Console;
-
 use ReflectionMethod;
 use DirectoryIterator;
 

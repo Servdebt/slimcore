@@ -1,7 +1,6 @@
 <?php
 
 namespace Servdebt\SlimCore\Filesystem\S3;
-
 use AsyncAws\S3\S3Client;
 use League\Flysystem\AsyncAwsS3\VisibilityConverter;
 use League\MimeTypeDetection\MimeTypeDetector;
@@ -35,7 +34,6 @@ class AsyncAwsS3Adapter extends \League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter
         'Tagging',
         'WebsiteRedirectLocation',
     ];
-
     /**
      * @var string[]
      */
@@ -47,7 +45,7 @@ class AsyncAwsS3Adapter extends \League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter
     ];
 
     /**
-     * * Important to validade if construct changes during package upgrades.
+     * * Important to validate if construct changes during package upgrades.
      *
      * @param S3Client $client
      */

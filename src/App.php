@@ -23,9 +23,9 @@ use Slim\Psr7\Uri;
 
 class App
 {
-    const DEVELOPMENT = 'development';
-    const STAGING = 'staging';
-    const PRODUCTION = 'production';
+    const string DEVELOPMENT = 'development';
+    const string STAGING = 'staging';
+    const string PRODUCTION = 'production';
 
     public string $env = self::DEVELOPMENT;
 

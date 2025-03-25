@@ -1,18 +1,15 @@
 <?php
 
 namespace Servdebt\SlimCore\ServiceProviders;
-
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
-use Monolog\Processor\WebProcessor;
 use Servdebt\SlimCore\App;
 use Servdebt\SlimCore\Monolog\Handler\SisHandler;
 use Servdebt\SlimCore\Monolog\Handler\LogdnaHandler;
 use Servdebt\SlimCore\Monolog\LogdnaFormatter;
 use Servdebt\SlimCore\Monolog\Handler\TelegramHandler;
 use Monolog\Handler\SyslogUdpHandler;
-use Psr\Container\ContainerInterface;
 
 class Monolog implements ProviderInterface
 {

@@ -7,7 +7,13 @@ class Command
 {
     public ?string $logFilePath = null;
 
-    public function __construct() {}
+    public function __construct()
+    {
+        try {
+            ob_implicit_flush();
+            ob_end_flush();
+        } catch (\Exception $e) {}
+    }
 
     protected function ask($question, $color = '92m'): string|false
     {
@@ -28,7 +34,7 @@ class Command
             file_put_contents($this->logFilePath, $string.PHP_EOL, FILE_APPEND);
         }
 
-        if ($addLog) {
+        if ($addLog && function_exists('addLog')) {
             addLog(LogLevel::ERROR, $string, $context);
         }
     }

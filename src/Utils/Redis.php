@@ -8,16 +8,13 @@ use Traversable;
 class Redis
 {
     public Client $client;
-
     public int $redisReads = 0;
     public int $redisWrites = 0;
 
-
-    public function __construct(ClientInterface $client)
+    public function __construct(Client $client)
     {
         $this->client = $client;
     }
-
 
     public function get(string $key, mixed $default = null, bool $uncompressData = true): mixed
     {
@@ -31,7 +28,6 @@ class Redis
             return $default;
         }
     }
-
 
     public function set(string $key, mixed $value, ?int $ttl = null, bool $compressData = true): bool
     {
@@ -54,7 +50,6 @@ class Redis
         throw new \Exception("TTL must be an integer or an instance of \\DateInterval");
     }
 
-
     public function delete(string $key): bool
     {
         $this->redisWrites++;
@@ -62,14 +57,12 @@ class Redis
         return $this->client->del($this->canonicalize($key)) == 1;
     }
 
-
     public function clear(): bool
     {
         $this->client->flushdb();
 
         return true; // FlushDB never fails.
     }
-
 
     public function getMultiple(Traversable|array $keys, mixed $default = null, bool $uncompressData = true): array
     {
@@ -86,7 +79,6 @@ class Redis
 
         return $result;
     }
-
 
     public function setMultiple(Traversable|array $values, $ttl = null, bool $compressData = true): bool
     {
@@ -112,7 +104,6 @@ class Redis
         return true;
     }
 
-
     public function deleteMultiple(Traversable|array $keys): bool
     {
         if (!is_array($keys) && !$keys instanceof Traversable) {
@@ -134,7 +125,6 @@ class Redis
 
         return true;
     }
-
 
     public function has(string $key): bool
     {
@@ -161,7 +151,6 @@ class Redis
         return $this->client->rpush($this->canonicalize($queue), $values);
     }
 
-
     public function dequeue(string $queue, bool $uncompressData = true): mixed
     {
         $var = $this->client->lpop($this->canonicalize($queue));
@@ -169,7 +158,6 @@ class Redis
 
         return $uncompressData ? $this->uncompress($var[1]) : $var[1];
     }
-
 
     public function dequeueWait($queue, $timeout = 30, bool $uncompressData = true): mixed
     {
@@ -183,7 +171,6 @@ class Redis
         return $uncompressData ? $this->uncompress($var[1]) : $var[1];
     }
 
-
     /* PUB SUB */
 
     /**
@@ -191,6 +178,7 @@ class Redis
      *
      * @param string $channel
      * @param mixed $message
+     * @return int
      */
     public function publish(mixed $channel, mixed $message): int
     {
@@ -198,7 +186,6 @@ class Redis
 
         return $this->client->publish($this->canonicalize($channel), $message);
     }
-
 
     /**
      * Subscribe a handler to a channel.
@@ -221,7 +208,6 @@ class Redis
 
         unset($loop);
     }
-
 
     public function testRateLimit(string $key, int $window, int $limit): mixed
     {
@@ -246,9 +232,7 @@ LUA;
         return $this->client->eval($script, 4, $key, microtime(true), $window, $limit);
     }
 
-
     /* Utils */
-
 
     private function compress(mixed $value): string|false
     {

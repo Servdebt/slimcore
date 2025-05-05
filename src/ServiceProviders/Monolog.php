@@ -7,7 +7,6 @@ use Monolog\Formatter\LineFormatter;
 use Servdebt\SlimCore\App;
 use Servdebt\SlimCore\Monolog\Handler\SisHandler;
 use Servdebt\SlimCore\Monolog\Handler\LogdnaHandler;
-use Servdebt\SlimCore\Monolog\LogdnaFormatter;
 use Servdebt\SlimCore\Monolog\Handler\TelegramHandler;
 use Monolog\Handler\SyslogUdpHandler;
 

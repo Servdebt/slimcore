@@ -79,7 +79,13 @@ class QueryBuilder extends Builder
                 if (strlen($endDate) < 8) $dtEnd->modify('last day of this month');
 
             } catch (\Exception $e) {
-                $dtStart = $dtEnd = new \DateTime("{$minYear}-01-01 00:00:00");
+                // if $startDate or $endDate is in other format than english format (m/d/Y) a exception is thrown by new DateTime(), on catch try again to create DateTime object with format d/m/Y
+                try {
+                    $dtStart = \DateTime::createFromFormat('d/m/Y H:i:s', $startDate . substr("{$minYear}-01-01 00:00:00", strlen($startDate), 19));
+                    $dtEnd = \DateTime::createFromFormat('d/m/Y H:i:s', $endDate . substr("{$minYear}-12-01 23:59:59", strlen($endDate), 19));
+                } catch (\Exception $e) {
+                    $dtStart = $dtEnd = new \DateTime("{$minYear}-01-01 00:00:00");
+                }
             }
 
             if ($dtStart->format('Y') < $minYear) $dtStart->setDate($minYear, $dtStart->format('m'), $dtStart->format('d'));
